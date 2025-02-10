@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to all documents for all users
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Allow write access to specific collections
+    match /categories/{categoryId} {
+      allow write: if true;
+    }
+    
+    match /preachers/{preacherId} {
+      allow write: if true;
+    }
+    
+    match /sermons/{sermonId} {
+      allow write: if true;
+    }
+    
+    match /tags/{tagId} {
+      allow write: if true;
+    }
+    
+    match /live_streams/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

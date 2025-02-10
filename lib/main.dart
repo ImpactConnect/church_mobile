@@ -1,0 +1,642 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'firebase_options.dart';
+import 'utils/toast_utils.dart';
+import 'screens/bible_screen.dart';
+import 'screens/notes_screen.dart';
+import 'screens/sermon_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/devotional_screen.dart';
+import 'screens/live_stream_screen.dart';
+import 'screens/event_screen.dart';
+import 'services/bible_service.dart';
+import 'services/note_service.dart';
+import 'services/sermon_service.dart';
+import 'services/audio_player_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    // Check if Firebase is already initialized
+    Firebase.app();
+  } catch (e) {
+    // Initialize Firebase only if it's not already initialized
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
+  // Initialize audio service
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.example.church_mobile.channel.audio',
+    androidNotificationChannelName: 'Church Mobile Audio',
+    androidNotificationOngoing: true,
+    androidStopForegroundOnPause: true,
+  );
+
+  // Initialize shared preferences
+  final prefs = await SharedPreferences.getInstance();
+  final bibleService = BibleService(prefs);
+  final sermonService = SermonService();
+  final audioPlayerService = AudioPlayerService();
+  final noteService = NoteService(prefs);
+
+  await bibleService.loadBible();
+
+  runApp(MyApp(
+    prefs: prefs,
+    bibleService: bibleService,
+    sermonService: sermonService,
+    audioPlayerService: audioPlayerService,
+    noteService: noteService,
+  ));
+}
+
+class MyApp extends StatelessWidget {
+  final SharedPreferences prefs;
+  final BibleService bibleService;
+  final SermonService sermonService;
+  final AudioPlayerService audioPlayerService;
+  final NoteService noteService;
+
+  const MyApp({
+    Key? key,
+    required this.prefs,
+    required this.bibleService,
+    required this.sermonService,
+    required this.audioPlayerService,
+    required this.noteService,
+  }) : super(key: key);
+
+  static MyApp of(BuildContext context) {
+    final _MyAppScope scope =
+        context.dependOnInheritedWidgetOfExactType<_MyAppScope>()!;
+    return scope.data;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _MyAppScope(
+      data: this,
+      child: MaterialApp(
+        scaffoldMessengerKey: ToastUtils.messengerKey,
+        title: 'Church Mobile',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          fontFamily: 'Roboto',
+        ),
+        home: const SplashScreen(),
+      ),
+    );
+  }
+}
+
+class _MyAppScope extends InheritedWidget {
+  final MyApp data;
+
+  const _MyAppScope({
+    Key? key,
+    required this.data,
+    required Widget child,
+  }) : super(key: key, child: child);
+
+  @override
+  bool updateShouldNotify(_MyAppScope oldWidget) => data != oldWidget.data;
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    try {
+      // Skip SharedPreferences initialization on web
+      if (!kIsWeb) {
+        await SharedPreferences.getInstance();
+      }
+
+      // Delay for splash screen
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      print('Error initializing app: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error initializing app: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Church Mobile',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[800],
+              ),
+            ),
+            const SizedBox(height: 20),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[800]!),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  BibleService? _bibleService;
+  NoteService? _noteService;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initServices();
+  }
+
+  Future<void> _initServices() async {
+    try {
+      setState(() => _isLoading = true);
+      _bibleService = MyApp.of(context).bibleService;
+      _noteService = MyApp.of(context).noteService;
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  final List<Map<String, dynamic>> quickActions = [
+    {
+      'icon': Icons.live_tv,
+      'label': 'Live Stream',
+      'color': Colors.red,
+      'route': (BuildContext context) => const LiveStreamScreen(),
+    },
+    {
+      'icon': Icons.play_circle_filled,
+      'label': 'Sermons',
+      'color': Colors.orange,
+      'route': (BuildContext context) => SermonScreen(
+        sermonService: MyApp.of(context).sermonService,
+        audioPlayerService: MyApp.of(context).audioPlayerService,
+      ),
+    },
+    {
+      'icon': Icons.menu_book,
+      'label': 'Bible',
+      'color': Colors.blue,
+      'route': (BuildContext context) => BibleScreen(
+        bibleService: MyApp.of(context).bibleService,
+      ),
+    },
+    {
+      'icon': Icons.note_alt,
+      'label': 'Notes',
+      'color': Colors.green,
+      'route': (BuildContext context) => NotesScreen(
+        noteService: MyApp.of(context).noteService,
+      ),
+    },
+    {
+      'icon': Icons.book,
+      'label': 'Devotional',
+      'color': Colors.purple,
+      'route': (BuildContext context) => const DevotionalScreen(),
+    },
+  ];
+
+  final List<Map<String, dynamic>> mediaButtons = [
+    {
+      'icon': Icons.play_circle_filled,
+      'label': 'Sermons',
+      'color': Colors.orange,
+      'route': (BuildContext context) => SermonScreen(
+        sermonService: MyApp.of(context).sermonService,
+        audioPlayerService: MyApp.of(context).audioPlayerService,
+      ),
+    },
+    {
+      'icon': Icons.video_library,
+      'label': 'Videos',
+      'color': Colors.red,
+      'route': null,
+    },
+    {
+      'icon': Icons.radio,
+      'label': 'Radio',
+      'color': Colors.blue,
+      'route': null,
+    },
+    {
+      'icon': Icons.photo_library,
+      'label': 'Gallery',
+      'color': Colors.purple,
+      'route': null,
+    },
+    {
+      'icon': Icons.live_tv,
+      'label': 'Live Stream',
+      'color': Colors.red,
+      'route': (BuildContext context) => const LiveStreamScreen(),
+    },
+  ];
+
+  final List<Map<String, dynamic>> engagementButtons = [
+    {
+      'icon': Icons.book,
+      'label': 'Devotionals',
+      'color': Colors.teal,
+      'route': (BuildContext context) => const DevotionalScreen(),
+    },
+    {
+      'icon': Icons.music_note,
+      'label': 'Hymns',
+      'color': Colors.indigo,
+      'route': null,
+    },
+    {
+      'icon': Icons.monetization_on,
+      'label': 'Donation',
+      'color': Colors.green,
+      'route': null,
+    },
+    {
+      'icon': Icons.newspaper,
+      'label': 'News',
+      'color': Colors.blue,
+      'route': null,
+    },
+    {
+      'icon': Icons.note_alt,
+      'label': 'Notes',
+      'color': Colors.amber,
+      'route': (BuildContext context) => NotesScreen(
+        noteService: MyApp.of(context).noteService,
+      ),
+    },
+    {
+      'icon': Icons.event,
+      'label': 'Events',
+      'color': Colors.orange,
+      'route': (BuildContext context) => const EventScreen(),
+    },
+  ];
+
+  final List<Map<String, dynamic>> communityButtons = [
+    {
+      'icon': Icons.rss_feed,
+      'label': 'Blog',
+      'color': Colors.orange,
+      'route': null,
+    },
+    {
+      'icon': Icons.people,
+      'label': 'Members Connect',
+      'color': Colors.blue,
+      'route': null,
+    },
+    {
+      'icon': Icons.star,
+      'label': 'Testimonies',
+      'color': Colors.purple,
+      'route': null,
+    },
+  ];
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        scrollDirection: Axis.horizontal,
+        itemCount: quickActions.length,
+        itemBuilder: (context, index) {
+          final action = quickActions[index];
+          return Container(
+            width: 72,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            child: InkWell(
+              onTap: () {
+                if (action['route'] != null) {
+                  final routeBuilder = action['route'] as Function;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => routeBuilder(context),
+                    ),
+                  );
+                }
+              },
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: action['color'].withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      action['icon'] as IconData,
+                      color: action['color'] as Color,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Flexible(
+                    child: Text(
+                      action['label'] as String,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[800],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildButtonGrid(List<Map<String, dynamic>> buttons) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 4,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 0.85,
+      children: buttons.map((button) {
+        return InkWell(
+          onTap: () {
+            if (button['route'] != null) {
+              final routeBuilder = button['route'] as Function;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => routeBuilder(context),
+                ),
+              );
+            }
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: (button['color'] as Color).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  button['icon'] as IconData,
+                  color: button['color'] as Color,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  button['label'] as String,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[800],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildVerseOfDayCard() {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: MyApp.of(context).bibleService.getVerseOfDay(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
+        final verseData = snapshot.data!;
+        final reference = '${verseData['book']} ${verseData['chapter']}:${verseData['verse']}';
+
+        return Card(
+          margin: const EdgeInsets.all(16),
+          elevation: 4,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Verse of the Day',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      onPressed: () async {
+                        await MyApp.of(context).bibleService.clearVerseOfDay();
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      verseData['text'],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      reference,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.bookmark_border),
+                      onPressed: () {
+                        final verse = MyApp.of(context).bibleService.findVerse(
+                          verseData['book'],
+                          verseData['chapter'],
+                          verseData['verse'],
+                        );
+
+                        if (verse != null) {
+                          setState(() {
+                            verse.toggleBookmark();
+                          });
+                          MyApp.of(context).bibleService.savePreferences();
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.share),
+                      onPressed: () {
+                        Share.share('${verseData['text']} - $reference');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200.0,
+            floating: false,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text('Church Mobile'),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.blue[800]!,
+                      Colors.blue[600]!,
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.church,
+                    size: 80,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle('Quick Actions'),
+                _buildQuickActions(),
+                _buildVerseOfDayCard(),
+                _buildSectionTitle('Media'),
+                _buildButtonGrid(mediaButtons),
+                _buildSectionTitle('Engagement'),
+                _buildButtonGrid(engagementButtons),
+                _buildSectionTitle('Community'),
+                _buildButtonGrid(communityButtons),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
