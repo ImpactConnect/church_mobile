@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  permission_handler: ^11.3.0
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.2.2
   uuid: ^4.2.1
@@ -61,10 +62,10 @@ dependencies:
   flutter_slidable: ^3.0.1
   shimmer: ^3.0.0
   table_calendar: ^3.0.9
-  webview_flutter: ^4.5.0
-  webview_flutter_android: ^3.15.0
-  webview_flutter_wkwebview: ^3.12.0
-  add_2_calendar: ^2.2.4
+  webview_flutter: ^4.4.2
+  webview_flutter_android: ^3.13.1
+  webview_flutter_platform_interface: ^2.6.0
+  device_calendar: ^4.3.2  # Downgrade to a more stable version
 
 dev_dependencies:
   flutter_test:
@@ -92,6 +93,7 @@ flutter:
     - assets/images/carousel3.jpg
     - assets/docs/kjv.json
     - assets/docs/kjv.json
+    - assets/docs/hymns.json
     - assets/images/sermon_hero.jpg
     - assets/images/devotional_header.jpg
     - assets/images/events_header.jpg
@@ -101,6 +103,8 @@ flutter:
     - assets/images/blog_header.jpg
     - assets/images/library_bg.jpg
     - assets/images/events_header.jpg
+    - assets/images/hymnal_header.jpg
+    - assets/images/hymnal_header.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

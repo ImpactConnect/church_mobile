@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'firebase_options.dart';
 import 'utils/toast_utils.dart';
@@ -13,6 +14,7 @@ import 'screens/settings_screen.dart';
 import 'screens/devotional_screen.dart';
 import 'screens/live_stream_screen.dart';
 import 'screens/event_screen.dart';
+import 'screens/hymn_screen.dart';
 import 'services/bible_service.dart';
 import 'services/note_service.dart';
 import 'services/sermon_service.dart';
@@ -22,13 +24,24 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Check if Firebase is already initialized
-    Firebase.app();
-  } catch (e) {
-    // Initialize Firebase only if it's not already initialized
+    print('Initializing Firebase...');
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    print('Firebase initialized successfully');
+
+    // Test Firestore connection
+    try {
+      print('Testing Firestore connection...');
+      await FirebaseFirestore.instance.collection('test').limit(1).get();
+      print('Firestore connection successful');
+    } catch (e) {
+      print('Error connecting to Firestore: $e');
+      ToastUtils.showToast('Error connecting to database');
+    }
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+    ToastUtils.showToast('Error initializing app');
   }
 
   // Initialize audio service
@@ -291,7 +304,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Icons.music_note,
       'label': 'Hymns',
       'color': Colors.indigo,
-      'route': null,
+      'route': (BuildContext context) => const HymnScreen(),
     },
     {
       'icon': Icons.monetization_on,

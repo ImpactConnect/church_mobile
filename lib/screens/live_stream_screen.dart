@@ -1,11 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:intl/intl.dart';
-import '../models/live_stream.dart';
-import '../services/live_stream_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/toast_utils.dart';
 
 class LiveStreamScreen extends StatefulWidget {
@@ -15,415 +13,638 @@ class LiveStreamScreen extends StatefulWidget {
   State<LiveStreamScreen> createState() => _LiveStreamScreenState();
 }
 
-class _LiveStreamScreenState extends State<LiveStreamScreen> {
-  final LiveStreamService _liveStreamService = LiveStreamService();
-  bool _isLoading = true;
-  LiveStream? _currentStream;
-  WebViewController? _webViewController;
-  bool _webViewCreated = false;
+class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBindingObserver {
+  final WebViewController _controller = WebViewController();
   bool _isFullScreen = false;
-  List<LiveStream> _upcomingStreams = [];
-  bool _disposed = false;
+  bool _isLoading = true;
+  bool _showControls = true;
+  String? _currentUrl;
+  String _currentPlatform = 'youtube';
+  String? _errorMessage;
+  String _streamTitle = '';
+  Timer? _controlsTimer;
+  StreamSubscription<DocumentSnapshot>? _streamSubscription;
 
   @override
   void initState() {
     super.initState();
-    // Delay initialization to ensure platform channel is ready
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (!mounted) return;
-      _initWebView();
-      _loadLiveStream();
-      _loadUpcomingStreams();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeWebView();
+    _startControlsTimer();
+    _setupStream();
+  }
+
+  void _setupStream() async {
+    try {
+      print('Fetching live stream data...');
+      // Simplified query to only check isLive
+      final snapshot = await FirebaseFirestore.instance
+          .collection('live_streams')
+          .where('isLive', isEqualTo: true)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print('No live stream documents found');
+        setState(() {
+          _errorMessage = 'No live stream available at the moment';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Find the most recent valid stream
+      DocumentSnapshot? validStream;
+      final now = DateTime.now();
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final Timestamp? endTime = data['endTime'];
+        
+        if (endTime != null && endTime.toDate().isAfter(now)) {
+          validStream = doc;
+          break;
+        }
+      }
+
+      if (validStream == null) {
+        print('No current live stream found');
+        setState(() {
+          _errorMessage = 'No live stream available at the moment';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      print('Found live stream document: ${validStream.id}');
+      print('Stream data: ${validStream.data()}');
+      _listenToStreamUrl(validStream.id);
+
+    } catch (e) {
+      print('Error setting up stream: $e');
+      setState(() {
+        _errorMessage = 'Unable to connect to live stream service';
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _listenToStreamUrl(String documentId) {
+    print('Setting up listener for document: $documentId');
+    _streamSubscription = FirebaseFirestore.instance
+        .collection('live_streams')
+        .doc(documentId)
+        .snapshots()
+        .listen((doc) {
+      if (!doc.exists) {
+        print('Live stream document no longer exists');
+        setState(() {
+          _errorMessage = 'No live stream available at the moment';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final data = doc.data();
+      if (data == null) {
+        print('Live stream document is empty');
+        setState(() {
+          _errorMessage = 'No live stream data available';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Check if stream is still live
+      if (data['isLive'] != true) {
+        print('Stream is no longer live');
+        setState(() {
+          _errorMessage = 'Stream has ended';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final Timestamp? endTime = data['endTime'];
+      if (endTime != null && endTime.toDate().isBefore(DateTime.now())) {
+        print('Stream has ended (past end time)');
+        setState(() {
+          _errorMessage = 'Stream has ended';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      String? url = data['url'];
+      String platform = (data['platform'] ?? 'youtube').toString().toLowerCase();
+      
+      print('Retrieved URL from Firestore: $url');
+      print('Platform: $platform');
+      
+      if (url == null || url.isEmpty) {
+        print('URL is null or empty');
+        setState(() {
+          _errorMessage = 'No live stream URL configured';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (data['title'] != null) {
+        setState(() {
+          _streamTitle = data['title'];
+        });
+      }
+
+      setState(() => _errorMessage = null);
+      
+      if (url != _currentUrl) {
+        print('Loading new URL: $url');
+        _currentUrl = url;
+        _currentPlatform = platform;
+        _loadUrl(url, platform: platform);
+      }
+    }, onError: (error) {
+      print('Error fetching stream URL: $error');
+      setState(() {
+        _errorMessage = 'Unable to access live stream settings';
+        _isLoading = false;
+      });
+    });
+  }
+
+  String _getVideoId(String url) {
+    RegExp regExp = RegExp(
+      r'^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*',
+    );
+    
+    Match? match = regExp.firstMatch(url);
+    return match?.group(1) ?? '';
+  }
+
+  String _getFacebookVideoUrl(String url) {
+    // Convert to embedded format if it's not already
+    if (!url.contains('embed')) {
+      url = url.replaceAll('www.facebook.com', 'www.facebook.com/plugins/video.php')
+          .replaceAll('fb.watch', 'www.facebook.com/plugins/video.php');
+      if (!url.contains('?')) {
+        url += '?';
+      }
+      url += '&show_text=false&width=100%&height=100%&autoplay=true';
+    }
+    return url;
+  }
+
+  void _loadUrl(String url, {String platform = 'youtube'}) {
+    print('Loading WebView URL: $url for platform: $platform');
+    
+    String embedUrl;
+    if (platform.toLowerCase() == 'youtube') {
+      final videoId = _getVideoId(url);
+      if (videoId.isEmpty) {
+        print('Invalid YouTube URL: $url');
+        setState(() {
+          _errorMessage = 'Invalid video URL';
+          _isLoading = false;
+        });
+        return;
+      }
+      embedUrl = 'https://www.youtube.com/embed/$videoId';
+    } else if (platform.toLowerCase() == 'facebook') {
+      embedUrl = _getFacebookVideoUrl(url);
+    } else {
+      embedUrl = url;
+    }
+
+    print('Using embed URL: $embedUrl');
+
+    final customHtml = '''
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <style>
+          body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000000;
+          }
+          #player-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+          }
+          iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="player-container">
+          <iframe 
+            src="${platform.toLowerCase() == 'youtube' ? '$embedUrl?autoplay=1&controls=1&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1' : embedUrl}"
+            frameborder="0"
+            allowfullscreen="true"
+            webkitallowfullscreen="true" 
+            mozallowfullscreen="true"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            style="background: #000000;"
+          ></iframe>
+        </div>
+        <script>
+          function updateSize() {
+            const container = document.getElementById('player-container');
+            const iframe = document.querySelector('iframe');
+            if (container && iframe) {
+              const width = window.innerWidth;
+              const height = window.innerHeight;
+              container.style.width = width + 'px';
+              container.style.height = height + 'px';
+              iframe.style.width = width + 'px';
+              iframe.style.height = height + 'px';
+            }
+          }
+
+          // Initial setup
+          document.addEventListener('DOMContentLoaded', function() {
+            updateSize();
+            // Force hardware acceleration
+            document.body.style.transform = 'translateZ(0)';
+            document.body.style.webkitTransform = 'translateZ(0)';
+          });
+
+          // Handle resize and orientation changes
+          window.addEventListener('resize', updateSize);
+          window.addEventListener('orientationchange', function() {
+            setTimeout(updateSize, 100);
+          });
+        </script>
+      </body>
+      </html>
+    ''';
+
+    _controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF000000))
+      ..enableZoom(false)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            print('Page load started: $url');
+            if (!mounted) return;
+            setState(() {
+              _isLoading = true;
+            });
+          },
+          onPageFinished: (String url) {
+            print('Page load finished: $url');
+            if (!mounted) return;
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          onWebResourceError: (WebResourceError error) {
+            print('WebView error: ${error.description} (${error.errorCode})');
+            if (!mounted) return;
+            setState(() {
+              _errorMessage = 'Error loading stream: ${error.description}';
+              _isLoading = false;
+            });
+          },
+        ),
+      )
+      ..loadHtmlString(customHtml);
+  }
+
+  void _initializeWebView() {
+    print('Initializing WebView');
+    
+    // Configure Android-specific settings
+    if (_controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(false);
+      final androidController = _controller.platform as AndroidWebViewController;
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+    }
+
+    _controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF000000))
+      ..enableZoom(false);
+  }
+
+  void _resetOrientation() {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
+  void _startControlsTimer() {
+    _controlsTimer?.cancel();
+    if (_showControls) {
+      _controlsTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _showControls = false;
+          });
+        }
+      });
+    }
+  }
+
+  void _toggleControls() {
+    setState(() {
+      _showControls = !_showControls;
+    });
+    _startControlsTimer();
+  }
+
+  void _toggleFullScreen() {
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+      if (_isFullScreen) {
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      } else {
+        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
     });
   }
 
   @override
   void dispose() {
-    _disposed = true;
-    // Safely dispose WebView
-    if (_webViewController != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        try {
-          _webViewController?.clearCache();
-          _webViewController = null;
-        } catch (e) {
-          print('Error disposing WebView: $e');
-        }
-      });
+    // Cancel any pending operations
+    _controlsTimer?.cancel();
+    _streamSubscription?.cancel();
+    
+    // Clear WebView resources
+    if (mounted) {
+      _controller
+        ..clearCache()
+        ..clearLocalStorage()
+        ..setJavaScriptMode(JavaScriptMode.disabled);
     }
+    
+    WidgetsBinding.instance.removeObserver(this);
+    _resetOrientation();
     super.dispose();
   }
 
-  Future<void> _loadUpcomingStreams() async {
-    try {
-      final streams = await _liveStreamService.getUpcomingStreams();
-      if (mounted && !_disposed) {
-        setState(() {
-          _upcomingStreams = streams;
-        });
-      }
-    } catch (e) {
-      print('Error loading upcoming streams: $e');
-    }
-  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    if (!mounted) return;
 
-  void _initWebView() {
-    if (_disposed) return;
-
-    try {
-      late final PlatformWebViewControllerCreationParams params;
-      if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-        params = WebKitWebViewControllerCreationParams(
-          allowsInlineMediaPlayback: true,
-          mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-        );
-      } else {
-        params = const PlatformWebViewControllerCreationParams();
-      }
-
-      final WebViewController controller =
-          WebViewController.fromPlatformCreationParams(params);
-
-      if (controller.platform is AndroidWebViewController) {
-        AndroidWebViewController.enableDebugging(true);
-        (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
-      }
-
-      if (!_disposed) {
-        setState(() {
-          _webViewController = controller;
-        });
-      }
-    } catch (e) {
-      print('Error initializing WebView: $e');
-    }
-  }
-
-  Future<void> _loadLiveStream() async {
-    try {
-      final stream = await _liveStreamService.getCurrentLiveStream();
-      if (!mounted || _disposed) return;
-      
-      setState(() {
-        _currentStream = stream;
-        _isLoading = false;
-      });
-      
-      if (stream != null) {
-        await _loadUrl(stream.url);
-      }
-    } catch (e) {
-      print('Error loading live stream: $e');
-      if (!mounted || _disposed) return;
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadUrl(String url) async {
-    if (_webViewController == null || _disposed) return;
-
-    try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted || _disposed) return;
-
-      await _webViewController!
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(const Color(0xFF000000))
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageFinished: (String url) {
-              if (mounted && !_disposed) {
-                setState(() {
-                  _isLoading = false;
-                  _webViewCreated = true;
-                });
-              }
-            },
-            onWebResourceError: (WebResourceError error) {
-              print('WebView error: ${error.description}');
-              if (mounted && !_disposed) {
-                setState(() {
-                  _isLoading = false;
-                });
-              }
-            },
-          ),
-        );
-
-      if (mounted && !_disposed) {
-        await _webViewController!.loadRequest(Uri.parse(url));
-      }
-    } catch (e) {
-      print('Error loading URL in WebView: $e');
-      if (mounted && !_disposed) {
-        setState(() {
-          _isLoading = false;
-        });
+    // Handle app lifecycle changes
+    if (state == AppLifecycleState.paused) {
+      // App is in background, pause video if playing
+      _controller.runJavaScript('''
+        try {
+          var iframe = document.querySelector('iframe');
+          if (iframe) {
+            iframe.contentWindow.postMessage(JSON.stringify({
+              'event': 'command',
+              'func': 'pauseVideo',
+              'args': ''
+            }), '*');
+          }
+        } catch (e) {
+          console.error('Error pausing video:', e);
+        }
+      ''');
+    } else if (state == AppLifecycleState.resumed) {
+      // App is in foreground, reload the page if needed
+      if (_currentUrl != null) {
+        _loadUrl(_currentUrl!, platform: _currentPlatform);
       }
     }
-  }
-
-  void _shareStream() {
-    if (_currentStream != null) {
-      Share.share(
-        'Join us for "${_currentStream!.title}" at ${_currentStream!.url}',
-        subject: _currentStream!.title,
-      );
-    }
-  }
-
-  Widget _buildHeroSection() {
-    return SliverAppBar(
-      expandedHeight: 200,
-      pinned: true,
-      actions: [
-        if (_currentStream != null)
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: _shareStream,
-            tooltip: 'Share Stream',
-          ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(
-              'assets/images/live_service_header.jpg',
-              fit: BoxFit.cover,
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.4),
-                    Colors.black.withOpacity(0.6),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        title: const Text(
-          'Live Stream',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-    );
-  }
-
-  Widget _buildStreamPlayer() {
-    if (_isLoading) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_currentStream == null) {
-      return SliverFillRemaining(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.tv_off,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No live stream available',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            if (_upcomingStreams.isNotEmpty) ...[
-              const SizedBox(height: 32),
-              const Text(
-                'Upcoming Streams',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _upcomingStreams.length,
-                  itemBuilder: (context, index) {
-                    final stream = _upcomingStreams[index];
-                    return Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.event),
-                        title: Text(stream.title),
-                        subtitle: Text(
-                          DateFormat('MMM d, y h:mm a').format(stream.startTime),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ],
-        ),
-      );
-    }
-
-    return SliverToBoxAdapter(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _currentStream!.title,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(_isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
-                      onPressed: () {
-                        setState(() {
-                          _isFullScreen = !_isFullScreen;
-                        });
-                      },
-                      tooltip: _isFullScreen ? 'Exit Fullscreen' : 'Enter Fullscreen',
-                    ),
-                  ],
-                ),
-                if (_currentStream!.startTime != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Started ${DateFormat('MMM d, y h:mm a').format(_currentStream!.startTime)}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Container(
-            color: Colors.black,
-            height: _isFullScreen ? MediaQuery.of(context).size.height : null,
-            child: AspectRatio(
-              aspectRatio: _isFullScreen ? MediaQuery.of(context).size.aspectRatio : 16 / 9,
-              child: _webViewController != null && _webViewCreated
-                  ? WebViewWidget(controller: _webViewController!)
-                  : const Center(child: CircularProgressIndicator()),
-            ),
-          ),
-          if (!_isFullScreen) ...[
-            const SizedBox(height: 16),
-            if (_currentStream!.isLive)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.fiber_manual_record, color: Colors.white, size: 12),
-                          SizedBox(width: 4),
-                          Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.share),
-                          onPressed: _shareStream,
-                          tooltip: 'Share Stream',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            if (_upcomingStreams.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Upcoming Streams',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _upcomingStreams.length,
-                itemBuilder: (context, index) {
-                  final stream = _upcomingStreams[index];
-                  return Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.event),
-                      title: Text(stream.title),
-                      subtitle: Text(
-                        DateFormat('MMM d, y h:mm a').format(stream.startTime),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ],
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadLiveStream();
-          await _loadUpcomingStreams();
-        },
-        child: CustomScrollView(
-          physics: _isFullScreen 
-              ? const NeverScrollableScrollPhysics() 
-              : const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            if (!_isFullScreen) _buildHeroSection(),
-            _buildStreamPlayer(),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isFullScreen) {
+          _toggleFullScreen();
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              if (_errorMessage != null)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        SizedBox(height: 16),
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: _setupStream,
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Center(
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: GestureDetector(
+                      onTap: _toggleControls,
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            child: WebViewWidget(
+                              controller: _controller,
+                            ),
+                          ),
+                          if (_isLoading)
+                            Container(
+                              color: Colors.black,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              
+              if (_isLoading && _errorMessage == null)
+                Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              
+              // Controls Overlay
+              AnimatedOpacity(
+                opacity: _showControls ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: GestureDetector(
+                  onTap: _toggleControls,
+                  child: Container(
+                    color: Colors.transparent,
+                    child: Stack(
+                      children: [
+                        // Top Bar with Back Button and Title
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.7),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                            child: SafeArea(
+                              child: Row(
+                                children: [
+                                  if (!_isFullScreen)
+                                    IconButton(
+                                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        _streamTitle,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Bottom Controls Bar
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.7),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                            child: SafeArea(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.refresh, color: Colors.white),
+                                    onPressed: () {
+                                      _controller.reload();
+                                      ToastUtils.showToast('Refreshing stream...');
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      _isFullScreen
+                                          ? Icons.fullscreen_exit
+                                          : Icons.fullscreen,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: _toggleFullScreen,
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Live Indicator
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: SafeArea(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    radius: 4,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'LIVE',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

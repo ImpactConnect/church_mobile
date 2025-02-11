@@ -28,9 +28,9 @@ service cloud.firestore {
       allow write: if false;
     }
     
+    // Allow read and write access to events collection
     match /events/{eventId} {
-      allow read: if true;
-      allow write: if false;
+      allow read, write: if true;
     }
   }
 }

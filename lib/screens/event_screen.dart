@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:add_2_calendar/add_2_calendar.dart' as calendar;
+import 'package:device_calendar/device_calendar.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/event.dart' as app_event;
 import '../services/event_service.dart';
 import '../utils/toast_utils.dart';
@@ -41,6 +42,18 @@ class _EventScreenState extends State<EventScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _addSampleEvents() async {
+    setState(() => _isLoading = true);
+    try {
+      await _eventService.addSampleEvents();
+      await _loadEvents(); // Reload events after adding samples
+    } catch (e) {
+      print('Error adding sample events: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -157,6 +170,11 @@ class _EventScreenState extends State<EventScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _addSampleEvents,
+                      child: const Text('Add Sample Events'),
+                    ),
                   ],
                 ),
               ),
@@ -250,7 +268,7 @@ class _EventCard extends StatelessWidget {
   }
 }
 
-class _EventDetailsSheet extends StatelessWidget {
+class _EventDetailsSheet extends StatefulWidget {
   final app_event.Event event;
 
   const _EventDetailsSheet({
@@ -258,26 +276,94 @@ class _EventDetailsSheet extends StatelessWidget {
     required this.event,
   }) : super(key: key);
 
-  void _addToCalendar() {
-    final calendarEvent = calendar.Event(
-      title: event.title,
-      description: event.description,
-      location: event.venue,
-      startDate: event.startDate,
-      endDate: event.endDate,
-    );
-    calendar.Add2Calendar.addEvent2Cal(calendarEvent);
+  @override
+  State<_EventDetailsSheet> createState() => _EventDetailsSheetState();
+}
+
+class _EventDetailsSheetState extends State<_EventDetailsSheet> {
+  late final DeviceCalendarPlugin _deviceCalendarPlugin;
+
+  @override
+  void initState() {
+    super.initState();
+    _deviceCalendarPlugin = DeviceCalendarPlugin();
+  }
+
+  Future<bool> _requestCalendarPermissions() async {
+    final status = await Permission.calendar.request();
+    if (status.isDenied) {
+      ToastUtils.showToast('Calendar permission is required to add events');
+      return false;
+    }
+    if (status.isPermanentlyDenied) {
+      ToastUtils.showToast('Please enable calendar permission in app settings');
+      await openAppSettings();
+      return false;
+    }
+    return status.isGranted;
+  }
+
+  Future<void> _addToCalendar() async {
+    try {
+      final hasPermission = await _requestCalendarPermissions();
+      if (!hasPermission) {
+        return;
+      }
+
+      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
+      if (permissionsGranted.isSuccess && !permissionsGranted.data!) {
+        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
+        if (!permissionsGranted.isSuccess || !permissionsGranted.data!) {
+          ToastUtils.showToast('Calendar permission is required');
+          return;
+        }
+      }
+
+      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
+      if (!calendarsResult.isSuccess) {
+        ToastUtils.showToast('Failed to get calendars');
+        return;
+      }
+
+      final calendars = calendarsResult.data;
+      if (calendars == null || calendars.isEmpty) {
+        ToastUtils.showToast('No calendars found');
+        return;
+      }
+
+      // Use the first available calendar
+      final calendar = calendars.first;
+
+      final eventToCreate = Event(
+        calendar.id,
+        title: widget.event.title,
+        description: widget.event.description,
+        start: TZDateTime.from(widget.event.startDate, local),
+        end: TZDateTime.from(widget.event.endDate, local),
+        location: widget.event.venue,
+      );
+
+      final createEventResult = await _deviceCalendarPlugin.createOrUpdateEvent(eventToCreate);
+      if (createEventResult?.isSuccess ?? false) {
+        ToastUtils.showToast('${widget.event.title} has been added to your calendar');
+      } else {
+        ToastUtils.showToast('Failed to add event to calendar');
+      }
+    } catch (e) {
+      print('Error adding event to calendar: $e');
+      ToastUtils.showToast('Failed to add event to calendar');
+    }
   }
 
   void _shareEvent() {
     final String shareText = '''
-${event.title}
+${widget.event.title}
 
-Date: ${DateFormat('MMM d, y').format(event.startDate)}
-Time: ${event.programmeTime}
-Venue: ${event.venue}
+Date: ${DateFormat('MMM d, y').format(widget.event.startDate)}
+Time: ${widget.event.programmeTime}
+Venue: ${widget.event.venue}
 
-${event.description}
+${widget.event.description}
 ''';
     Share.share(shareText);
   }
@@ -310,7 +396,7 @@ ${event.description}
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Image.network(
-                    event.imageUrl,
+                    widget.event.imageUrl,
                     height: 250,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -328,7 +414,7 @@ ${event.description}
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          event.title,
+                          widget.event.title,
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -338,22 +424,22 @@ ${event.description}
                         _DetailItem(
                           icon: Icons.calendar_today,
                           title: 'Start Date',
-                          content: DateFormat('MMM d, y').format(event.startDate),
+                          content: DateFormat('MMM d, y').format(widget.event.startDate),
                         ),
                         _DetailItem(
                           icon: Icons.calendar_today,
                           title: 'End Date',
-                          content: DateFormat('MMM d, y').format(event.endDate),
+                          content: DateFormat('MMM d, y').format(widget.event.endDate),
                         ),
                         _DetailItem(
                           icon: Icons.access_time,
                           title: 'Programme Time',
-                          content: event.programmeTime,
+                          content: widget.event.programmeTime,
                         ),
                         _DetailItem(
                           icon: Icons.location_on,
                           title: 'Venue',
-                          content: event.venue,
+                          content: widget.event.venue,
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -365,7 +451,7 @@ ${event.description}
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          event.description,
+                          widget.event.description,
                           style: const TextStyle(
                             fontSize: 16,
                             height: 1.5,
