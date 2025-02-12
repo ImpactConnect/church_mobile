@@ -202,4 +202,18 @@ class SermonService {
     final sermons = await _loadFromPrefs();
     return sermons.where((sermon) => sermon.isBookmarked).toList();
   }
+
+  Future<Sermon?> getSermonById(String id) async {
+    try {
+      final doc = await _firestore.collection('sermons').doc(id).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        return Sermon.fromMap(data, doc.id);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting sermon by ID: $e');
+      return null;
+    }
+  }
 }

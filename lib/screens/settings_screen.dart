@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'admin/populate_data_screen.dart';
+import '../utils/mock_data_generator.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -45,6 +46,35 @@ class SettingsScreen extends StatelessWidget {
                   builder: (context) => const PopulateDataScreen(),
                 ),
               );
+            },
+          ),
+          ListTile(
+            title: const Text('Generate Mock Carousel Data'),
+            subtitle: const Text('Populate Firebase with sample carousel items'),
+            trailing: const Icon(Icons.data_array),
+            onTap: () async {
+              try {
+                final generator = MockDataGenerator();
+                await generator.clearExistingCarouselData();
+                await generator.generateMockCarouselData();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Mock carousel data generated successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error generating mock data: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
           ),
           const Divider(),

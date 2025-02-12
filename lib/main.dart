@@ -15,10 +15,12 @@ import 'screens/devotional_screen.dart';
 import 'screens/live_stream_screen.dart';
 import 'screens/event_screen.dart';
 import 'screens/hymn_screen.dart';
+import 'screens/event_details_screen.dart';
 import 'services/bible_service.dart';
 import 'services/note_service.dart';
 import 'services/sermon_service.dart';
 import 'services/audio_player_service.dart';
+import 'widgets/home_carousel.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +107,53 @@ class MyApp extends StatelessWidget {
           fontFamily: 'Roboto',
         ),
         home: const SplashScreen(),
+        routes: {
+          '/bible': (context) => BibleScreen(
+            bibleService: MyApp.of(context).bibleService,
+          ),
+          '/sermons': (context) => SermonScreen(
+            sermonService: MyApp.of(context).sermonService,
+            audioPlayerService: MyApp.of(context).audioPlayerService,
+          ),
+          '/events': (context) => const EventScreen(),
+          '/live': (context) => const LiveStreamScreen(),
+          '/devotional': (context) => const DevotionalScreen(),
+        },
+        onGenerateRoute: (settings) {
+          // Handle sermon details route
+          if (settings.name?.startsWith('/sermons/') ?? false) {
+            final sermonId = settings.name!.split('/').last;
+            return MaterialPageRoute(
+              builder: (context) => SermonScreen(
+                sermonService: MyApp.of(context).sermonService,
+                audioPlayerService: MyApp.of(context).audioPlayerService,
+                initialSermonId: sermonId,
+              ),
+            );
+          }
+          
+          // Handle event details route
+          if (settings.name?.startsWith('/events/') ?? false) {
+            final eventId = settings.name!.split('/').last;
+            return MaterialPageRoute(
+              builder: (context) => EventDetailsScreen(
+                eventId: eventId,
+                title: 'Event Details',
+              ),
+            );
+          }
+          return null;
+        },
+        onUnknownRoute: (settings) {
+          return MaterialPageRoute(
+            builder: (context) => Scaffold(
+              appBar: AppBar(title: const Text('Page Not Found')),
+              body: Center(
+                child: Text('Route ${settings.name} not found'),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -200,11 +249,15 @@ class _HomePageState extends State<HomePage> {
   BibleService? _bibleService;
   NoteService? _noteService;
   bool _isLoading = true;
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    _initServices();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initServices();
+      _initialized = true;
+    }
   }
 
   Future<void> _initServices() async {
@@ -635,6 +688,26 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('carousel_config')
+                      .doc('collections')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data!.exists) {
+                      final paths = List<String>.from(snapshot.data!.get('paths') ?? []);
+                      return Column(
+                        children: [
+                          for (final path in paths) ...[
+                            HomeCarousel(collectionPath: '$path/items'),
+                            const SizedBox(height: 16),
+                          ],
+                        ],
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
                 _buildSectionTitle('Quick Actions'),
                 _buildQuickActions(),
                 _buildVerseOfDayCard(),

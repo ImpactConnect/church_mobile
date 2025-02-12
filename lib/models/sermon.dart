@@ -29,7 +29,10 @@ class Sermon {
 
   factory Sermon.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+    return Sermon.fromMap(data, doc.id);
+  }
+
+  factory Sermon.fromMap(Map<String, dynamic> data, String id) {
     // Handle dateCreated field which might be null
     DateTime dateCreated;
     try {
@@ -44,7 +47,7 @@ class Sermon {
     }
 
     return Sermon(
-      id: doc.id,
+      id: id,
       title: data['title'] as String? ?? '',
       preacherName: data['preacherName'] as String? ?? '',
       category: data['category'] as String? ?? '',
@@ -52,6 +55,9 @@ class Sermon {
       thumbnailUrl: data['thumbnailUrl'] as String? ?? '',
       audioUrl: data['audioUrl'] as String? ?? '',
       dateCreated: dateCreated,
+      isBookmarked: data['isBookmarked'] as bool? ?? false,
+      isDownloaded: data['isDownloaded'] as bool? ?? false,
+      localAudioPath: data['localAudioPath'] as String?,
     );
   }
 

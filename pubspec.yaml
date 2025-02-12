@@ -43,13 +43,18 @@ dependencies:
   # Firebase
   firebase_core: ^2.15.1
   firebase_auth: ^4.9.0
-  cloud_firestore: ^4.9.1
-  firebase_storage: ^11.2.6
+  cloud_firestore: ^4.15.5
+  firebase_storage: ^11.6.6
+  
+  # UI Components
+  card_swiper: ^3.0.1
   
   # Audio player
   just_audio: ^0.9.36
-  just_audio_background: ^0.0.1-beta.15
+  just_audio_background: ^0.0.1-beta.11
   audio_service: ^0.18.12
+  audio_session: ^0.1.18
+  rxdart: ^0.27.7
   
   # Caching
   cached_network_image: ^3.3.1
@@ -66,6 +71,7 @@ dependencies:
   webview_flutter_android: ^3.13.1
   webview_flutter_platform_interface: ^2.6.0
   device_calendar: ^4.3.2  # Downgrade to a more stable version
+  url_launcher: ^6.2.4
 
 dev_dependencies:
   flutter_test:

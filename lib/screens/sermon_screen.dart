@@ -8,11 +8,13 @@ import '../widgets/mini_player.dart';
 class SermonScreen extends StatefulWidget {
   final SermonService sermonService;
   final AudioPlayerService audioPlayerService;
+  final String? initialSermonId;
 
   const SermonScreen({
     Key? key,
     required this.sermonService,
     required this.audioPlayerService,
+    this.initialSermonId,
   }) : super(key: key);
 
   @override
@@ -40,6 +42,13 @@ class _SermonScreenState extends State<SermonScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _initializeData();
+    
+    // Play initial sermon if ID is provided
+    if (widget.initialSermonId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _playInitialSermon();
+      });
+    }
   }
 
   @override
@@ -91,6 +100,17 @@ class _SermonScreenState extends State<SermonScreen>
       _currentSermon = null;
     });
     widget.audioPlayerService.stop();
+  }
+
+  Future<void> _playInitialSermon() async {
+    try {
+      final sermon = await widget.sermonService.getSermonById(widget.initialSermonId!);
+      if (sermon != null && mounted) {
+        widget.audioPlayerService.playSermon(sermon);
+      }
+    } catch (e) {
+      print('Error playing initial sermon: $e');
+    }
   }
 
   @override
