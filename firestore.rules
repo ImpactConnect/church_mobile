@@ -48,5 +48,30 @@ service cloud.firestore {
     match /carousels/{carouselId}/{document=**} {
       allow read, write: if true;
     }
+
+    // Library collections
+    match /books/{bookId} {
+      allow read: if true;
+      // Only allow write access for admin operations
+      allow write: if true; // TODO: Add admin authentication check
+    }
+
+    // Book categories collection
+    match /book_categories/{categoryId} {
+      allow read: if true;
+      allow write: if true; // TODO: Add admin authentication check
+    }
+
+    // Book topics collection
+    match /book_topics/{topicId} {
+      allow read: if true;
+      allow write: if true; // TODO: Add admin authentication check
+    }
+
+    // Book authors collection
+    match /book_authors/{authorId} {
+      allow read: if true;
+      allow write: if true; // TODO: Add admin authentication check
+    }
   }
 }

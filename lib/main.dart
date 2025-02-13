@@ -28,6 +28,7 @@ import 'screens/notification_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
+import 'screens/library/library_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -137,6 +138,7 @@ class MyApp extends StatelessWidget {
               '/live_streams': (context) => const LiveStreamScreen(),
               '/devotional': (context) => const DevotionalScreen(),
               '/blog': (context) => const BlogListScreen(),
+              '/library': (context) => const LibraryScreen(),
             },
             onGenerateRoute: (settings) {
               final uri = Uri.parse(settings.name ?? '');
@@ -410,7 +412,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Icons.local_library,
       'label': 'Library',
       'color': Colors.brown,
-      'route': null,
+      'route': (BuildContext context) => const LibraryScreen(),
     },
     {
       'icon': Icons.rss_feed,
