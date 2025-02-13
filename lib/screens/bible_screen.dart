@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/bible_model.dart';
 import '../services/bible_service.dart';
-import 'chapter_selection_screen.dart';
+import 'book_chapter_selection_screen.dart';
 
 class BibleScreen extends StatefulWidget {
   final BibleService? bibleService;
@@ -188,113 +188,15 @@ class _BibleScreenState extends State<BibleScreen>
     );
   }
 
-  void _showBookChapterPicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (_, controller) => Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Select Book & Chapter',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Row(
-                  children: [
-                    // Books List
-                    Expanded(
-                      child: _buildBooksList(),
-                    ),
-                    // Chapters List
-                    if (_currentBook != null) ...[
-                      const VerticalDivider(),
-                      Expanded(
-                        child: GridView.builder(
-                          controller: controller,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            childAspectRatio: 1,
-                          ),
-                          itemCount: _currentBook!.totalChapters,
-                          itemBuilder: (context, index) {
-                            final chapter = _currentBook!.chapters[index];
-                            return Card(
-                              color: chapter.number == _currentChapter?.number
-                                  ? Theme.of(context).primaryColor
-                                  : null,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _currentChapter = chapter;
-                                  });
-                                  Navigator.pop(context);
-                                },
-                                child: Center(
-                                  child: Text(
-                                    '${chapter.number}',
-                                    style: TextStyle(
-                                      color: chapter.number ==
-                                              _currentChapter?.number
-                                          ? Colors.white
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToChapterSelection(Book book) {
+  void _showBookSelection() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChapterSelectionScreen(
-          book: book,
+        builder: (context) => BookChapterSelectionScreen(
           bibleService: _bibleService,
+          books: _allBooks,
         ),
       ),
-    );
-  }
-
-  Widget _buildBooksList() {
-    if (_allBooks.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return ListView.builder(
-      itemCount: _allBooks.length,
-      itemBuilder: (context, index) {
-        final book = _allBooks[index];
-        return ListTile(
-          title: Text(book.name),
-          onTap: () => _navigateToChapterSelection(book),
-        );
-      },
     );
   }
 
@@ -417,28 +319,27 @@ class _BibleScreenState extends State<BibleScreen>
                 style: const TextStyle(color: Colors.white),
                 onChanged: _performSearch,
               )
-            : GestureDetector(
-                onTap: _showBookChapterPicker,
+            : InkWell(
+                onTap: _showBookSelection,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _currentBook?.name ?? 'Select Book',
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                          if (_currentChapter != null)
-                            Text(
-                              'Chapter ${_currentChapter!.number}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                        ],
+                    Flexible(
+                      child: Text(
+                        _currentBook?.name ?? 'Select Book',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
-                    const Icon(Icons.arrow_drop_down),
+                    if (_currentChapter != null) ...[
+                      const Text(' - '),
+                      Text(
+                        'Ch ${_currentChapter!.number}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_drop_down, size: 20),
                   ],
                 ),
               ),

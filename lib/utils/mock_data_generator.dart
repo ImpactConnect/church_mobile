@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/carousel_item.dart';
 
 class MockDataGenerator {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -19,7 +18,8 @@ class MockDataGenerator {
       {
         'title': 'Welcome to Impact Connect',
         'description': 'Your digital gateway to our church community',
-        'imageUrl': 'https://images.unsplash.com/photo-1438032005730-c779502df39b',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1438032005730-c779502df39b',
         'isActive': true,
         'order': 1,
         'createdAt': Timestamp.now(),
@@ -27,7 +27,8 @@ class MockDataGenerator {
       {
         'title': 'Sunday Service Times',
         'description': 'Join us every Sunday at 9:00 AM and 11:00 AM',
-        'imageUrl': 'https://images.unsplash.com/photo-1507692049790-de58290a4334',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1507692049790-de58290a4334',
         'linkUrl': '/schedule',
         'linkType': 'inApp',
         'isActive': true,
@@ -37,7 +38,8 @@ class MockDataGenerator {
       {
         'title': 'Download Our App',
         'description': 'Stay connected with our church community',
-        'imageUrl': 'https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec',
         'linkUrl': 'https://play.google.com/store',
         'linkType': 'external',
         'isActive': true,
@@ -51,7 +53,8 @@ class MockDataGenerator {
       {
         'title': 'Youth Conference 2024',
         'description': 'Join us for three days of worship and fellowship',
-        'imageUrl': 'https://images.unsplash.com/photo-1526653054275-5a4f37ea1c64',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1526653054275-5a4f37ea1c64',
         'linkUrl': '/events/youth-conference',
         'linkType': 'inApp',
         'isActive': true,
@@ -71,7 +74,8 @@ class MockDataGenerator {
       {
         'title': 'Community Outreach',
         'description': 'Serving our local community together',
-        'imageUrl': 'https://images.unsplash.com/photo-1593113598332-cd288d649433',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1593113598332-cd288d649433',
         'linkUrl': '/events/outreach',
         'linkType': 'inApp',
         'isActive': true,
@@ -85,7 +89,8 @@ class MockDataGenerator {
       {
         'title': 'Latest Sermon Series',
         'description': 'Walking in Faith: A Journey Through Hebrews',
-        'imageUrl': 'https://images.unsplash.com/photo-1490127252417-7c393f993ee4',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1490127252417-7c393f993ee4',
         'linkUrl': '/sermons/latest',
         'linkType': 'inApp',
         'isActive': true,
@@ -95,7 +100,8 @@ class MockDataGenerator {
       {
         'title': 'Watch Live',
         'description': 'Join our Sunday service online',
-        'imageUrl': 'https://images.unsplash.com/photo-1505236858219-8359eb29e329',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1505236858219-8359eb29e329',
         'linkUrl': 'https://youtube.com/live',
         'linkType': 'external',
         'isActive': true,
@@ -105,7 +111,8 @@ class MockDataGenerator {
       {
         'title': 'Sermon Archive',
         'description': 'Access our complete sermon library',
-        'imageUrl': 'https://images.unsplash.com/photo-1585858229735-cd08d8cb0e63',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1585858229735-cd08d8cb0e63',
         'linkUrl': '/sermons',
         'linkType': 'inApp',
         'isActive': true,
@@ -119,7 +126,8 @@ class MockDataGenerator {
 
     // Add announcements
     for (var item in announcements) {
-      final docRef = _firestore.collection('carousels/announcements/items').doc();
+      final docRef =
+          _firestore.collection('carousels/announcements/items').doc();
       batch.set(docRef, item);
     }
 

@@ -27,24 +27,25 @@ class Hymn {
       title: json['title'],
       author: json['author'],
       lyrics: (json['lyrics'] as List<dynamic>)
-          .map((stanza) => (stanza as List<dynamic>)
-              .map((line) => line.toString())
-              .toList())
+          .map((stanza) =>
+              (stanza as List<dynamic>).map((line) => line.toString()).toList())
           .toList(),
-      chorus: json['chorus'] != null 
-          ? (json['chorus'] as List<dynamic>).map((line) => line.toString()).toList()
+      chorus: json['chorus'] != null
+          ? (json['chorus'] as List<dynamic>)
+              .map((line) => line.toString())
+              .toList()
           : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'hymn_number': hymnNumber,
-    'title': title,
-    'author': author,
-    'lyrics': lyrics,
-    'chorus': chorus,
-    'isBookmarked': isBookmarked,
-  };
+        'hymn_number': hymnNumber,
+        'title': title,
+        'author': author,
+        'lyrics': lyrics,
+        'chorus': chorus,
+        'isBookmarked': isBookmarked,
+      };
 }
 
 class HymnScreen extends StatefulWidget {
@@ -54,7 +55,8 @@ class HymnScreen extends StatefulWidget {
   _HymnScreenState createState() => _HymnScreenState();
 }
 
-class _HymnScreenState extends State<HymnScreen> with SingleTickerProviderStateMixin {
+class _HymnScreenState extends State<HymnScreen>
+    with SingleTickerProviderStateMixin {
   List<Hymn> _allHymns = [];
   List<Hymn> _hymns = [];
   final TextEditingController _searchController = TextEditingController();
@@ -64,8 +66,8 @@ class _HymnScreenState extends State<HymnScreen> with SingleTickerProviderStateM
 
   List<Hymn> _getFilteredHymns() {
     final query = _searchController.text.toLowerCase();
-    final List<Hymn> filteredBySearch = query.isEmpty 
-        ? _allHymns 
+    final List<Hymn> filteredBySearch = query.isEmpty
+        ? _allHymns
         : _allHymns.where((hymn) {
             final numberMatch = hymn.hymnNumber.toString().contains(query);
             final titleMatch = hymn.title.toLowerCase().contains(query);
@@ -107,15 +109,16 @@ class _HymnScreenState extends State<HymnScreen> with SingleTickerProviderStateM
     final bookmarks = prefs.getStringList('bookmarked_hymns') ?? [];
     setState(() {
       _bookmarkedHymns = bookmarks.map((s) => int.parse(s)).toSet();
-      _allHymns.forEach((hymn) {
+      for (var hymn in _allHymns) {
         hymn.isBookmarked = _bookmarkedHymns.contains(hymn.hymnNumber);
-      });
+      }
     });
   }
 
   Future<void> _loadHymns() async {
     try {
-      final String response = await rootBundle.loadString('assets/docs/hymns.json');
+      final String response =
+          await rootBundle.loadString('assets/docs/hymns.json');
       final List<dynamic> hymnsJson = json.decode(response);
       setState(() {
         _allHymns = hymnsJson.map((json) => Hymn.fromJson(json)).toList();
@@ -192,7 +195,8 @@ class _HymnScreenState extends State<HymnScreen> with SingleTickerProviderStateM
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
                           filled: true,
                           fillColor: Colors.grey[100],
                           isDense: true,
@@ -254,7 +258,7 @@ class _HymnScreenState extends State<HymnScreen> with SingleTickerProviderStateM
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     if (hymns.isEmpty) {
       return Center(
         child: Padding(
@@ -281,7 +285,8 @@ class _HymnScreenState extends State<HymnScreen> with SingleTickerProviderStateM
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             title: Text(
               hymn.title,
               style: const TextStyle(
@@ -365,7 +370,8 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return SizedBox.expand(child: child);
   }
 

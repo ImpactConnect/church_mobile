@@ -14,9 +14,7 @@ class DevotionalService {
   }
 
   Future<void> _initPrefs() async {
-    if (_prefs == null) {
-      _prefs = await SharedPreferences.getInstance();
-    }
+    _prefs ??= await SharedPreferences.getInstance();
   }
 
   // Get bookmarked devotional IDs
@@ -57,14 +55,16 @@ class DevotionalService {
 
     try {
       final snapshots = await Future.wait(
-        bookmarkedIds.map((id) => _firestore.collection(_collection).doc(id).get()),
+        bookmarkedIds
+            .map((id) => _firestore.collection(_collection).doc(id).get()),
       );
 
       return snapshots
           .where((doc) => doc.exists)
           .map((doc) => Devotional.fromFirestore(doc))
           .toList()
-        ..sort((a, b) => b.date.compareTo(a.date)); // Sort by date, newest first
+        ..sort(
+            (a, b) => b.date.compareTo(a.date)); // Sort by date, newest first
     } catch (e) {
       print('Error fetching bookmarked devotionals: $e');
       return [];
@@ -77,21 +77,23 @@ class DevotionalService {
     String? searchQuery,
   }) async {
     try {
-      Query query = _firestore.collection(_collection).orderBy('date', descending: true);
+      Query query =
+          _firestore.collection(_collection).orderBy('date', descending: true);
 
       if (selectedDate != null) {
-        final startOfDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+        final startOfDay =
+            DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
         final endOfDay = startOfDay.add(const Duration(days: 1));
 
         query = query
-            .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+            .where('date',
+                isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
             .where('date', isLessThan: Timestamp.fromDate(endOfDay));
       }
 
       final QuerySnapshot snapshot = await query.get();
-      List<Devotional> devotionals = snapshot.docs
-          .map((doc) => Devotional.fromFirestore(doc))
-          .toList();
+      List<Devotional> devotionals =
+          snapshot.docs.map((doc) => Devotional.fromFirestore(doc)).toList();
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
         final searchLower = searchQuery.toLowerCase();
@@ -120,9 +122,7 @@ class DevotionalService {
           .limit(5)
           .get();
 
-      return snapshot.docs
-          .map((doc) => Devotional.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map((doc) => Devotional.fromFirestore(doc)).toList();
     } catch (e) {
       print('Error fetching recent devotionals: $e');
       ToastUtils.showErrorToast('Error loading recent devotionals');
@@ -133,10 +133,8 @@ class DevotionalService {
   // Get devotional by ID
   Future<Devotional?> getDevotionalById(String id) async {
     try {
-      final DocumentSnapshot doc = await _firestore
-          .collection(_collection)
-          .doc(id)
-          .get();
+      final DocumentSnapshot doc =
+          await _firestore.collection(_collection).doc(id).get();
 
       if (!doc.exists) {
         ToastUtils.showErrorToast('Devotional not found');

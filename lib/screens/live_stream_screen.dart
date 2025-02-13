@@ -13,7 +13,8 @@ class LiveStreamScreen extends StatefulWidget {
   State<LiveStreamScreen> createState() => _LiveStreamScreenState();
 }
 
-class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBindingObserver {
+class _LiveStreamScreenState extends State<LiveStreamScreen>
+    with WidgetsBindingObserver {
   final WebViewController _controller = WebViewController();
   bool _isFullScreen = false;
   bool _isLoading = true;
@@ -57,9 +58,9 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
       final now = DateTime.now();
 
       for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         final Timestamp? endTime = data['endTime'];
-        
+
         if (endTime != null && endTime.toDate().isAfter(now)) {
           validStream = doc;
           break;
@@ -78,7 +79,6 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
       print('Found live stream document: ${validStream.id}');
       print('Stream data: ${validStream.data()}');
       _listenToStreamUrl(validStream.id);
-
     } catch (e) {
       print('Error setting up stream: $e');
       setState(() {
@@ -135,11 +135,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
       }
 
       String? url = data['url'];
-      String platform = (data['platform'] ?? 'youtube').toString().toLowerCase();
-      
+      String platform =
+          (data['platform'] ?? 'youtube').toString().toLowerCase();
+
       print('Retrieved URL from Firestore: $url');
       print('Platform: $platform');
-      
+
       if (url == null || url.isEmpty) {
         print('URL is null or empty');
         setState(() {
@@ -156,7 +157,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
       }
 
       setState(() => _errorMessage = null);
-      
+
       if (url != _currentUrl) {
         print('Loading new URL: $url');
         _currentUrl = url;
@@ -176,7 +177,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
     RegExp regExp = RegExp(
       r'^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*',
     );
-    
+
     Match? match = regExp.firstMatch(url);
     return match?.group(1) ?? '';
   }
@@ -184,7 +185,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
   String _getFacebookVideoUrl(String url) {
     // Convert to embedded format if it's not already
     if (!url.contains('embed')) {
-      url = url.replaceAll('www.facebook.com', 'www.facebook.com/plugins/video.php')
+      url = url
+          .replaceAll('www.facebook.com', 'www.facebook.com/plugins/video.php')
           .replaceAll('fb.watch', 'www.facebook.com/plugins/video.php');
       if (!url.contains('?')) {
         url += '?';
@@ -196,7 +198,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
 
   void _loadUrl(String url, {String platform = 'youtube'}) {
     print('Loading WebView URL: $url for platform: $platform');
-    
+
     String embedUrl;
     if (platform.toLowerCase() == 'youtube') {
       final videoId = _getVideoId(url);
@@ -329,11 +331,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
 
   void _initializeWebView() {
     print('Initializing WebView');
-    
+
     // Configure Android-specific settings
     if (_controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(false);
-      final androidController = _controller.platform as AndroidWebViewController;
+      final androidController =
+          _controller.platform as AndroidWebViewController;
       androidController.setMediaPlaybackRequiresUserGesture(false);
     }
 
@@ -389,7 +392,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
     // Cancel any pending operations
     _controlsTimer?.cancel();
     _streamSubscription?.cancel();
-    
+
     // Clear WebView resources
     if (mounted) {
       _controller
@@ -397,7 +400,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
         ..clearLocalStorage()
         ..setJavaScriptMode(JavaScriptMode.disabled);
     }
-    
+
     WidgetsBinding.instance.removeObserver(this);
     _resetOrientation();
     super.dispose();
@@ -406,7 +409,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     if (!mounted) return;
 
     // Handle app lifecycle changes
@@ -456,17 +459,19 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.error_outline, size: 48, color: Colors.red),
-                        SizedBox(height: 16),
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
                         Text(
                           _errorMessage!,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 16),
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: _setupStream,
-                          child: Text('Retry'),
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
@@ -499,14 +504,14 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
                     ),
                   ),
                 ),
-              
+
               if (_isLoading && _errorMessage == null)
-                Center(
+                const Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
-              
+
               // Controls Overlay
               AnimatedOpacity(
                 opacity: _showControls ? 1.0 : 0.0,
@@ -539,12 +544,14 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
                                 children: [
                                   if (!_isFullScreen)
                                     IconButton(
-                                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                      icon: const Icon(Icons.arrow_back,
+                                          color: Colors.white),
                                       onPressed: () => Navigator.pop(context),
                                     ),
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
                                       child: Text(
                                         _streamTitle,
                                         style: const TextStyle(
@@ -584,10 +591,12 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.refresh, color: Colors.white),
+                                    icon: const Icon(Icons.refresh,
+                                        color: Colors.white),
                                     onPressed: () {
                                       _controller.reload();
-                                      ToastUtils.showToast('Refreshing stream...');
+                                      ToastUtils.showToast(
+                                          'Refreshing stream...');
                                     },
                                   ),
                                   IconButton(
@@ -612,7 +621,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen> with WidgetsBinding
                           right: 16,
                           child: SafeArea(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(4),

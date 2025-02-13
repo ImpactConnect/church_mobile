@@ -8,10 +8,11 @@ import '../screens/sermon_screen.dart';
 import '../screens/event_screen.dart';
 import '../screens/live_stream_screen.dart';
 import '../screens/devotional_screen.dart';
+import '../screens/web_view_screen.dart';
 
 class HomeCarousel extends StatefulWidget {
   final String collectionPath;
-  
+
   const HomeCarousel({
     Key? key,
     required this.collectionPath,
@@ -22,28 +23,37 @@ class HomeCarousel extends StatefulWidget {
 }
 
 class _HomeCarouselState extends State<HomeCarousel> {
-  int _currentIndex = 0;
+  final int _currentIndex = 0;
   final _swiperController = SwiperController();
 
   Future<void> _handleItemTap(CarouselItem item) async {
     if (item.linkUrl == null) return;
 
     if (item.linkType == CarouselLinkType.external) {
-      final url = Uri.parse(item.linkUrl!);
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.inAppWebView);
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WebViewScreen(
+              url: item.linkUrl!,
+              title: item.title,
+            ),
+          ),
+        );
       }
     } else {
       if (context.mounted) {
-        // If we have a specific item ID, navigate directly to it
-        if (item.itemId != null) {
+        // If we have a specific item ID and it's not empty
+        if (item.itemId != null && item.itemId!.isNotEmpty) {
           if (item.linkUrl!.startsWith('/sermons')) {
             Navigator.pushNamed(context, '/sermons/${item.itemId}');
           } else if (item.linkUrl!.startsWith('/events')) {
             Navigator.pushNamed(context, '/events/${item.itemId}');
+          } else if (item.linkUrl!.startsWith('/blog')) {
+            Navigator.pushNamed(context, '/blog/${item.itemId}');
           }
         } else {
-          // Otherwise, navigate to the main screen
+          // For routes without IDs or empty IDs, navigate directly to the route
           Navigator.pushNamed(context, item.linkUrl!);
         }
       }
@@ -122,10 +132,13 @@ class _HomeCarouselState extends State<HomeCarousel> {
                               Image.network(
                                 item.imageUrl ?? '',
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Container(
-                                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                    color: Theme.of(context)
+                                        .primaryColor
+                                        .withOpacity(0.1),
                                     child: const Center(
                                       child: CircularProgressIndicator(),
                                     ),
@@ -133,7 +146,9 @@ class _HomeCarouselState extends State<HomeCarousel> {
                                 },
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                                    color: Theme.of(context)
+                                        .primaryColor
+                                        .withOpacity(0.1),
                                     child: const Icon(
                                       Icons.image_not_supported,
                                       size: 32,

@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Allow read access to all documents for all users
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if true;
     }
     
     // Allow write access to specific collections
@@ -22,14 +22,30 @@ service cloud.firestore {
     match /tags/{tagId} {
       allow write: if true;
     }
-    
-    match /live_streams/{document} {
-      allow read: if true;
-      allow write: if false;
+
+    match /devotionals/{devotionalId} {
+      allow write: if true;
+    }
+
+    match /events/{eventId} {
+      allow read, write: if true;
+    }
+
+    match /live_streams/{live_streamId} {
+      allow read, write: if true;
+    }
+
+    // Blog posts collection
+    match /blog_posts/{postId} {
+      allow read, write: if true;
+    }
+
+    // New carousel collections
+    match /carousel_config/{document=**} {
+      allow read, write: if true;
     }
     
-    // Allow read and write access to events collection
-    match /events/{eventId} {
+    match /carousels/{carouselId}/{document=**} {
       allow read, write: if true;
     }
   }

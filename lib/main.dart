@@ -16,11 +16,18 @@ import 'screens/live_stream_screen.dart';
 import 'screens/event_screen.dart';
 import 'screens/hymn_screen.dart';
 import 'screens/event_details_screen.dart';
+import 'screens/blog/blog_list_screen.dart';
+import 'screens/blog/blog_detail_screen.dart';
 import 'services/bible_service.dart';
 import 'services/note_service.dart';
 import 'services/sermon_service.dart';
 import 'services/audio_player_service.dart';
 import 'widgets/home_carousel.dart';
+import 'widgets/bottom_nav_bar.dart';
+import 'screens/notification_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/language_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,13 +70,21 @@ Future<void> main() async {
 
   await bibleService.loadBible();
 
-  runApp(MyApp(
-    prefs: prefs,
-    bibleService: bibleService,
-    sermonService: sermonService,
-    audioPlayerService: audioPlayerService,
-    noteService: noteService,
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider(prefs)),
+        ChangeNotifierProvider(create: (_) => LanguageProvider(prefs)),
+      ],
+      child: MyApp(
+        prefs: prefs,
+        bibleService: bibleService,
+        sermonService: sermonService,
+        audioPlayerService: audioPlayerService,
+        noteService: noteService,
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -96,65 +111,83 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MyAppScope(
-      data: this,
-      child: MaterialApp(
-        scaffoldMessengerKey: ToastUtils.messengerKey,
-        title: 'Church Mobile',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          fontFamily: 'Roboto',
-        ),
-        home: const SplashScreen(),
-        routes: {
-          '/bible': (context) => BibleScreen(
-            bibleService: MyApp.of(context).bibleService,
-          ),
-          '/sermons': (context) => SermonScreen(
-            sermonService: MyApp.of(context).sermonService,
-            audioPlayerService: MyApp.of(context).audioPlayerService,
-          ),
-          '/events': (context) => const EventScreen(),
-          '/live': (context) => const LiveStreamScreen(),
-          '/devotional': (context) => const DevotionalScreen(),
-        },
-        onGenerateRoute: (settings) {
-          // Handle sermon details route
-          if (settings.name?.startsWith('/sermons/') ?? false) {
-            final sermonId = settings.name!.split('/').last;
-            return MaterialPageRoute(
-              builder: (context) => SermonScreen(
+    return Consumer2<ThemeProvider, LanguageProvider>(
+      builder: (context, themeProvider, languageProvider, _) {
+        return _MyAppScope(
+          data: this,
+          child: MaterialApp(
+            scaffoldMessengerKey: ToastUtils.messengerKey,
+            title: 'Church Mobile',
+            theme: themeProvider.lightTheme,
+            darkTheme: themeProvider.darkTheme,
+            themeMode: themeProvider.themeMode,
+            locale: languageProvider.currentLocale,
+            supportedLocales: LanguageProvider.supportedLocales.values,
+            home: const SplashScreen(),
+            routes: {
+              '/bible': (context) => BibleScreen(
+                bibleService: MyApp.of(context).bibleService,
+              ),
+              '/sermons': (context) => SermonScreen(
                 sermonService: MyApp.of(context).sermonService,
                 audioPlayerService: MyApp.of(context).audioPlayerService,
-                initialSermonId: sermonId,
               ),
-            );
-          }
-          
-          // Handle event details route
-          if (settings.name?.startsWith('/events/') ?? false) {
-            final eventId = settings.name!.split('/').last;
-            return MaterialPageRoute(
-              builder: (context) => EventDetailsScreen(
-                eventId: eventId,
-                title: 'Event Details',
-              ),
-            );
-          }
-          return null;
-        },
-        onUnknownRoute: (settings) {
-          return MaterialPageRoute(
-            builder: (context) => Scaffold(
-              appBar: AppBar(title: const Text('Page Not Found')),
-              body: Center(
-                child: Text('Route ${settings.name} not found'),
-              ),
-            ),
-          );
-        },
-      ),
+              '/events': (context) => const EventScreen(),
+              '/live': (context) => const LiveStreamScreen(),
+              '/live_streams': (context) => const LiveStreamScreen(),
+              '/devotional': (context) => const DevotionalScreen(),
+              '/blog': (context) => const BlogListScreen(),
+            },
+            onGenerateRoute: (settings) {
+              final uri = Uri.parse(settings.name ?? '');
+              final pathSegments = uri.pathSegments;
+
+              if (pathSegments.length == 2) {
+                final id = pathSegments[1];
+                
+                switch (pathSegments[0]) {
+                  case 'sermons':
+                    return MaterialPageRoute(
+                      builder: (context) => SermonScreen(
+                        sermonService: MyApp.of(context).sermonService,
+                        audioPlayerService: MyApp.of(context).audioPlayerService,
+                        initialSermonId: id,
+                      ),
+                    );
+                    
+                  case 'events':
+                    return MaterialPageRoute(
+                      builder: (context) => EventDetailsScreen(
+                        eventId: id,
+                        title: 'Event Details',
+                      ),
+                    );
+                    
+                  case 'blog':
+                    return MaterialPageRoute(
+                      builder: (context) => BlogDetailScreen(
+                        postId: id,
+                      ),
+                    );
+                }
+              }
+              
+              // If no matching route was found, return null
+              return null;
+            },
+            onUnknownRoute: (settings) {
+              return MaterialPageRoute(
+                builder: (context) => Scaffold(
+                  appBar: AppBar(title: const Text('Page Not Found')),
+                  body: Center(
+                    child: Text('Route ${settings.name} not found'),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -338,12 +371,6 @@ class _HomePageState extends State<HomePage> {
       'color': Colors.purple,
       'route': null,
     },
-    {
-      'icon': Icons.live_tv,
-      'label': 'Live Stream',
-      'color': Colors.red,
-      'route': (BuildContext context) => const LiveStreamScreen(),
-    },
   ];
 
   final List<Map<String, dynamic>> engagementButtons = [
@@ -366,12 +393,6 @@ class _HomePageState extends State<HomePage> {
       'route': null,
     },
     {
-      'icon': Icons.newspaper,
-      'label': 'News',
-      'color': Colors.blue,
-      'route': null,
-    },
-    {
       'icon': Icons.note_alt,
       'label': 'Notes',
       'color': Colors.amber,
@@ -385,24 +406,21 @@ class _HomePageState extends State<HomePage> {
       'color': Colors.orange,
       'route': (BuildContext context) => const EventScreen(),
     },
-  ];
-
-  final List<Map<String, dynamic>> communityButtons = [
+    {
+      'icon': Icons.local_library,
+      'label': 'Library',
+      'color': Colors.brown,
+      'route': null,
+    },
     {
       'icon': Icons.rss_feed,
       'label': 'Blog',
-      'color': Colors.orange,
-      'route': null,
+      'color': Colors.blue,
+      'route': (BuildContext context) => BlogListScreen(),
     },
     {
       'icon': Icons.people,
       'label': 'Members Connect',
-      'color': Colors.blue,
-      'route': null,
-    },
-    {
-      'icon': Icons.star,
-      'label': 'Testimonies',
       'color': Colors.purple,
       'route': null,
     },
@@ -651,7 +669,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     return Scaffold(
@@ -715,14 +737,13 @@ class _HomePageState extends State<HomePage> {
                 _buildButtonGrid(mediaButtons),
                 _buildSectionTitle('Engagement'),
                 _buildButtonGrid(engagementButtons),
-                _buildSectionTitle('Community'),
-                _buildButtonGrid(communityButtons),
                 const SizedBox(height: 24),
               ],
             ),
           ),
         ],
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
     );
   }
 }

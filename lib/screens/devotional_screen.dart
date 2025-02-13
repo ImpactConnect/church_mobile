@@ -11,7 +11,8 @@ class DevotionalScreen extends StatefulWidget {
   State<DevotionalScreen> createState() => _DevotionalScreenState();
 }
 
-class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerProviderStateMixin {
+class _DevotionalScreenState extends State<DevotionalScreen>
+    with SingleTickerProviderStateMixin {
   final DevotionalService _devotionalService = DevotionalService();
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
@@ -97,13 +98,13 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
                 ),
               ),
             ),
-            Positioned(
+            const Positioned(
               bottom: 16,
               left: 16,
               right: 16,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'Daily Devotional',
                     style: TextStyle(
@@ -154,7 +155,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
           decoration: InputDecoration(
             hintText: 'Search devotionals...',
             hintStyle: TextStyle(color: Colors.grey[400]),
-            prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
+            prefixIcon:
+                Icon(Icons.search, color: Theme.of(context).primaryColor),
             suffixIcon: IconButton(
               icon: Icon(
                 Icons.calendar_today,
@@ -165,7 +167,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
               },
             ),
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           ),
           onChanged: _handleSearch,
         ),
@@ -174,7 +177,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
   }
 
   Widget _buildCalendar() {
-    if (!_isCalendarVisible) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (!_isCalendarVisible)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverToBoxAdapter(
       child: Container(
@@ -245,7 +249,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
   }
 
   Widget _buildTodaysDevotional() {
-    if (_todaysDevotional == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_todaysDevotional == null)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverToBoxAdapter(
       child: Container(
@@ -357,7 +362,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
   }
 
   Widget _buildSearchResults() {
-    if (_searchResults.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_searchResults.isEmpty)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -371,13 +377,16 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
             ),
           ),
         ),
-        ..._searchResults.map((devotional) => _buildDevotionalCard(devotional)).toList(),
+        ..._searchResults
+            .map((devotional) => _buildDevotionalCard(devotional))
+            .toList(),
       ]),
     );
   }
 
   Widget _buildRecentDevotionals() {
-    if (_recentDevotionals.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_recentDevotionals.isEmpty)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -391,7 +400,9 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
             ),
           ),
         ),
-        ..._recentDevotionals.map((devotional) => _buildDevotionalCard(devotional)).toList(),
+        ..._recentDevotionals
+            .map((devotional) => _buildDevotionalCard(devotional))
+            .toList(),
       ]),
     );
   }
@@ -441,7 +452,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DevotionalDetailScreen(devotional: devotional),
+              builder: (context) =>
+                  DevotionalDetailScreen(devotional: devotional),
             ),
           );
         },
@@ -493,7 +505,8 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
-          (context, index) => _buildDevotionalCard(_bookmarkedDevotionals[index]),
+          (context, index) =>
+              _buildDevotionalCard(_bookmarkedDevotionals[index]),
           childCount: _bookmarkedDevotionals.length,
         ),
       ),
@@ -528,13 +541,15 @@ class _DevotionalScreenState extends State<DevotionalScreen> with SingleTickerPr
                               _buildCalendar(),
                               _buildTodaysDevotional(),
                               _buildRecentDevotionals(),
-                              const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+                              const SliverPadding(
+                                  padding: EdgeInsets.only(bottom: 24)),
                             ],
                           ),
                           CustomScrollView(
                             slivers: [
                               _buildBookmarkedDevotionals(),
-                              const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+                              const SliverPadding(
+                                  padding: EdgeInsets.only(bottom: 24)),
                             ],
                           ),
                         ],
@@ -570,7 +585,8 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => maxHeight;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return SizedBox.expand(child: child);
   }
 

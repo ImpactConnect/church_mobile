@@ -48,6 +48,7 @@ dependencies:
   
   # UI Components
   card_swiper: ^3.0.1
+  webview_flutter: ^4.4.2
   
   # Audio player
   just_audio: ^0.9.36
@@ -67,11 +68,14 @@ dependencies:
   flutter_slidable: ^3.0.1
   shimmer: ^3.0.0
   table_calendar: ^3.0.9
-  webview_flutter: ^4.4.2
   webview_flutter_android: ^3.13.1
   webview_flutter_platform_interface: ^2.6.0
   device_calendar: ^4.3.2  # Downgrade to a more stable version
-  url_launcher: ^6.2.4
+  package_info_plus: ^5.0.1
+  url_launcher: ^6.2.2
+  provider: ^6.1.1
+  flutter_cache_manager: ^3.3.1
+  timeago: ^3.6.0
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +97,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/images/
     - assets/images/church_logo.png
     - assets/images/carousel1.jpg
     - assets/images/carousel2.jpg
@@ -111,6 +116,7 @@ flutter:
     - assets/images/events_header.jpg
     - assets/images/hymnal_header.jpg
     - assets/images/hymnal_header.jpg
+    - assets/images/blog_header.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

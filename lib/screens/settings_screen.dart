@@ -1,89 +1,243 @@
 import 'package:flutter/material.dart';
-import 'admin/populate_data_screen.dart';
-import '../utils/mock_data_generator.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
+import '../providers/theme_provider.dart';
+import '../providers/language_provider.dart';
+import '../services/storage_manager.dart';
+import '../widgets/bottom_nav_bar.dart';
+import 'help_support_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _appSize = '...';
+  String _cacheSize = '...';
+  bool _isLoading = true;
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInfo();
+  }
+
+  Future<void> _loadInfo() async {
+    final storageInfo = await StorageManager.getStorageInfo();
+    if (mounted) {
+      setState(() {
+        _appSize = StorageManager.formatSize(storageInfo['appSize']!);
+        _cacheSize = StorageManager.formatSize(storageInfo['cacheSize']!);
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _showLanguageDialog() async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: languageProvider.supportedLanguages
+              .map(
+                (lang) => ListTile(
+                  title: Text(lang),
+                  trailing: lang == languageProvider.currentLanguage
+                      ? const Icon(Icons.check, color: Colors.blue)
+                      : null,
+                  onTap: () {
+                    languageProvider.setLanguage(lang);
+                    Navigator.pop(context);
+                  },
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showClearCacheDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Cache'),
+        content: const Text(
+          'This will clear all cached data. Downloaded content will not be affected. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('CLEAR'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await StorageManager.clearCache();
+      await _loadInfo();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cache cleared successfully')),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
-      body: ListView(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.person_outline),
-            title: const Text('Account'),
-            onTap: () {
-              // TODO: Implement account settings
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.notifications_outlined),
-            title: const Text('Notifications'),
-            onTap: () {
-              // TODO: Implement notification settings
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.dark_mode_outlined),
-            title: const Text('Theme'),
-            onTap: () {
-              // TODO: Implement theme settings
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.admin_panel_settings_outlined),
-            title: const Text('Admin'),
-            subtitle: const Text('Manage app data'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PopulateDataScreen(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                // Appearance Section
+                _buildSectionHeader('APPEARANCE'),
+                ListTile(
+                  leading: const Icon(Icons.dark_mode),
+                  title: const Text('Dark Mode'),
+                  subtitle: const Text('Toggle dark theme'),
+                  trailing: Switch(
+                    value: themeProvider.themeMode == ThemeMode.dark,
+                    onChanged: (value) => themeProvider.toggleTheme(),
+                  ),
                 ),
-              );
-            },
-          ),
-          ListTile(
-            title: const Text('Generate Mock Carousel Data'),
-            subtitle: const Text('Populate Firebase with sample carousel items'),
-            trailing: const Icon(Icons.data_array),
-            onTap: () async {
-              try {
-                final generator = MockDataGenerator();
-                await generator.clearExistingCarouselData();
-                await generator.generateMockCarouselData();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Mock carousel data generated successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error generating mock data: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('About'),
-            onTap: () {
-              // TODO: Implement about screen
-            },
+                _buildDivider(),
+
+                // Language & Region
+                _buildSectionHeader('LANGUAGE & REGION'),
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: const Text('Language'),
+                  subtitle: Text(languageProvider.currentLanguage),
+                  onTap: _showLanguageDialog,
+                ),
+                _buildDivider(),
+
+                // Storage Section
+                _buildSectionHeader('STORAGE'),
+                ListTile(
+                  leading: const Icon(Icons.storage),
+                  title: const Text('App Storage'),
+                  subtitle: Text('App Size: $_appSize'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cached),
+                  title: const Text('Cache'),
+                  subtitle: Text('Cache Size: $_cacheSize'),
+                  trailing: TextButton(
+                    onPressed: _showClearCacheDialog,
+                    child: const Text('CLEAR'),
+                  ),
+                ),
+                _buildDivider(),
+
+                // Help & Support
+                _buildSectionHeader('HELP & SUPPORT'),
+                ListTile(
+                  leading: const Icon(Icons.help_outline),
+                  title: const Text('Help Center'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpSupportScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.mail_outline),
+                  title: const Text('Contact Support'),
+                  onTap: () => _launchURL('mailto:support@yourchurch.com'),
+                ),
+                _buildDivider(),
+
+                // About Section
+                _buildSectionHeader('ABOUT'),
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('About'),
+                  subtitle: Text('Version $_appVersion'),
+                  onTap: _showAboutDialog,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.policy_outlined),
+                  title: const Text('Privacy Policy'),
+                  onTap: () => _launchURL('https://yourchurch.com/privacy'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: const Text('Terms of Service'),
+                  onTap: () => _launchURL('https://yourchurch.com/terms'),
+                ),
+              ],
+            ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).primaryColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(height: 1, indent: 16, endIndent: 16);
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final url = Uri.parse(urlString);
+    if (await url_launcher.canLaunchUrl(url)) {
+      await url_launcher.launchUrl(url);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch URL')),
+        );
+      }
+    }
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AboutDialog(
+        applicationName: 'Church Mobile',
+        applicationVersion: 'Version $_appVersion',
+        applicationIcon: const Icon(Icons.church, size: 50),
+        children: const [
+          Text(
+            'Church Mobile is your comprehensive church companion app, '
+            'designed to enhance your spiritual journey with features like '
+            'Bible study, sermons, events, and more.',
           ),
         ],
       ),
