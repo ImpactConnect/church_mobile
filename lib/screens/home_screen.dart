@@ -35,6 +35,31 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  List<Map<String, dynamic>> _getQuickActionButtons() {
+    return [
+      {
+        'icon': Icons.menu_book,
+        'label': 'Bible',
+        'onTap': () => Navigator.pushNamed(context, '/bible'),
+      },
+      {
+        'icon': Icons.headphones,
+        'label': 'Sermons',
+        'onTap': () => Navigator.pushNamed(context, '/sermons'),
+      },
+      {
+        'icon': Icons.people,
+        'label': 'Community',
+        'onTap': () => Navigator.pushNamed(context, '/community'),
+      },
+      {
+        'icon': Icons.event,
+        'label': 'Events',
+        'onTap': () => Navigator.pushNamed(context, '/events'),
+      },
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

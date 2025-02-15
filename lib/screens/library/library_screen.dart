@@ -14,7 +14,8 @@ class LibraryScreen extends StatefulWidget {
   State<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProviderStateMixin {
+class _LibraryScreenState extends State<LibraryScreen>
+    with SingleTickerProviderStateMixin {
   final BookService _bookService = BookService();
   late TabController _tabController;
   String? _searchQuery;
@@ -23,10 +24,10 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
   List<String>? _selectedTopics;
   final ScrollController _scrollController = ScrollController();
 
-  bool get _hasActiveFilters => 
-    _selectedCategory != null || 
-    _selectedAuthor != null || 
-    (_selectedTopics?.isNotEmpty ?? false);
+  bool get _hasActiveFilters =>
+      _selectedCategory != null ||
+      _selectedAuthor != null ||
+      (_selectedTopics?.isNotEmpty ?? false);
 
   @override
   void initState() {
@@ -51,7 +52,8 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
     return downloadedBooks;
   }
 
-  Widget _buildBookSection(String title, Future<List<Book>> Function() getBooks) {
+  Widget _buildBookSection(
+      String title, Future<List<Book>> Function() getBooks) {
     return FutureBuilder<List<Book>>(
       future: getBooks(),
       builder: (context, snapshot) {
@@ -120,9 +122,12 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    _buildBookSection('Trending Books', () => _bookService.getTrendingBooks()),
-                    _buildBookSection('Most Downloaded', () => _bookService.getMostDownloadedBooks()),
-                    _buildBookSection('Recommended', () => _bookService.getRecommendedBooks()),
+                    _buildBookSection('Trending Books',
+                        () => _bookService.getTrendingBooks()),
+                    _buildBookSection('Most Downloaded',
+                        () => _bookService.getMostDownloadedBooks()),
+                    _buildBookSection('Recommended',
+                        () => _bookService.getRecommendedBooks()),
                   ],
                 ),
               ),
@@ -132,7 +137,7 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                   Material(
                     elevation: 2,
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    child: Container(
+                    child: SizedBox(
                       width: double.infinity,
                       height: 130, // Fixed container height
                       child: Column(
@@ -149,14 +154,15 @@ class _LibraryScreenState extends State<LibraryScreen> with SingleTickerProvider
                               ],
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             height: 82, // Remaining space for filter section
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 2),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(16, 4, 16, 2),
                                   child: Text(
                                     'Browse Books by:',
                                     style: TextStyle(
@@ -271,7 +277,8 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 130;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return child;
   }
 

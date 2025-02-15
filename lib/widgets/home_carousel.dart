@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:card_swiper/card_swiper.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/carousel_item.dart';
-import '../screens/bible_screen.dart';
-import '../screens/sermon_screen.dart';
-import '../screens/event_screen.dart';
-import '../screens/live_stream_screen.dart';
-import '../screens/devotional_screen.dart';
-import '../screens/web_view_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeCarousel extends StatefulWidget {
   final String collectionPath;
@@ -25,40 +18,6 @@ class HomeCarousel extends StatefulWidget {
 class _HomeCarouselState extends State<HomeCarousel> {
   final int _currentIndex = 0;
   final _swiperController = SwiperController();
-
-  Future<void> _handleItemTap(CarouselItem item) async {
-    if (item.linkUrl == null) return;
-
-    if (item.linkType == CarouselLinkType.external) {
-      if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WebViewScreen(
-              url: item.linkUrl!,
-              title: item.title,
-            ),
-          ),
-        );
-      }
-    } else {
-      if (context.mounted) {
-        // If we have a specific item ID and it's not empty
-        if (item.itemId != null && item.itemId!.isNotEmpty) {
-          if (item.linkUrl!.startsWith('/sermons')) {
-            Navigator.pushNamed(context, '/sermons/${item.itemId}');
-          } else if (item.linkUrl!.startsWith('/events')) {
-            Navigator.pushNamed(context, '/events/${item.itemId}');
-          } else if (item.linkUrl!.startsWith('/blog')) {
-            Navigator.pushNamed(context, '/blog/${item.itemId}');
-          }
-        } else {
-          // For routes without IDs or empty IDs, navigate directly to the route
-          Navigator.pushNamed(context, item.linkUrl!);
-        }
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +69,9 @@ class _HomeCarouselState extends State<HomeCarousel> {
                   itemBuilder: (context, index) {
                     final item = items[index];
                     return GestureDetector(
-                      onTap: () => _handleItemTap(item),
+                      onTap: () {
+                        item.handleNavigation(context);
+                      },
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 8.0),
                         decoration: BoxDecoration(

@@ -43,12 +43,14 @@ dependencies:
   
   # Firebase
   firebase_core: ^2.15.1
-  firebase_auth: ^4.9.0
+  firebase_auth: ^4.17.8
   cloud_firestore: ^4.15.5
   firebase_storage: ^11.6.6
   
   # UI Components
   card_swiper: ^3.0.1
+  webview_flutter_android: ^3.12.1
+  webview_flutter_platform_interface: ^2.6.0
   webview_flutter: ^4.4.2
   
   # Audio player
@@ -69,11 +71,9 @@ dependencies:
   flutter_slidable: ^3.0.1
   shimmer: ^3.0.0
   table_calendar: ^3.0.9
-  webview_flutter_android: ^3.13.1
-  webview_flutter_platform_interface: ^2.6.0
   device_calendar: ^4.3.2  # Downgrade to a more stable version
   package_info_plus: ^5.0.1
-  url_launcher: ^6.2.2
+  url_launcher: ^6.0.0
   provider: ^6.1.1
   flutter_cache_manager: ^3.3.1
   timeago: ^3.6.0
@@ -104,7 +104,6 @@ flutter:
     - assets/images/carousel2.jpg
     - assets/images/carousel3.jpg
     - assets/docs/kjv.json
-    - assets/docs/kjv.json
     - assets/docs/hymns.json
     - assets/images/sermon_hero.jpg
     - assets/images/devotional_header.jpg
@@ -115,7 +114,6 @@ flutter:
     - assets/images/blog_header.jpg
     - assets/images/library_bg.jpg
     - assets/images/events_header.jpg
-    - assets/images/hymnal_header.jpg
     - assets/images/hymnal_header.jpg
     - assets/images/blog_header.jpg
 

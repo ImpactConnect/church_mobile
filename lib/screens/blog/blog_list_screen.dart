@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:share_plus/share_plus.dart';
 import '../../models/blog_post.dart';
 import '../../services/blog_service.dart';
 import 'blog_detail_screen.dart';
@@ -253,7 +252,8 @@ class _BlogPostCard extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BlogDetailScreen(postId: post.id),
+                              builder: (context) =>
+                                  BlogDetailScreen(postId: post.id),
                             ),
                           );
                         },

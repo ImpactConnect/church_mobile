@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/book.dart';
-import '../../screens/library/book_detail_screen.dart';
 import 'book_card.dart';
 
 class BookGrid extends StatelessWidget {

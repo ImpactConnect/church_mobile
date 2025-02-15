@@ -153,7 +153,7 @@ class FilterSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
+        SizedBox(
           height: 32, // Fixed height for filter buttons
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -177,7 +177,9 @@ class FilterSection extends StatelessWidget {
                 _buildFilterButton(
                   context,
                   'Topics',
-                  selectedTopics?.isNotEmpty == true ? '${selectedTopics!.length} selected' : null,
+                  selectedTopics?.isNotEmpty == true
+                      ? '${selectedTopics!.length} selected'
+                      : null,
                   () => _showTopicsDialog(context),
                 ),
                 if (hasActiveFilters) ...[
@@ -207,12 +209,14 @@ class FilterSection extends StatelessWidget {
                   if (selectedCategory != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: _buildSelectedChip(selectedCategory!, () => onCategorySelected(null)),
+                      child: _buildSelectedChip(
+                          selectedCategory!, () => onCategorySelected(null)),
                     ),
                   if (selectedAuthor != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: _buildSelectedChip(selectedAuthor!, () => onAuthorSelected(null)),
+                      child: _buildSelectedChip(
+                          selectedAuthor!, () => onAuthorSelected(null)),
                     ),
                   if (selectedTopics != null)
                     ...selectedTopics!.map((topic) => Padding(
@@ -220,8 +224,11 @@ class FilterSection extends StatelessWidget {
                           child: _buildSelectedChip(
                             topic,
                             () {
-                              final newTopics = List<String>.from(selectedTopics!)..remove(topic);
-                              onTopicsSelected(newTopics.isEmpty ? null : newTopics);
+                              final newTopics =
+                                  List<String>.from(selectedTopics!)
+                                    ..remove(topic);
+                              onTopicsSelected(
+                                  newTopics.isEmpty ? null : newTopics);
                             },
                           ),
                         )),

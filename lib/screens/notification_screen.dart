@@ -6,34 +6,44 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacementNamed(context, '/home');
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Notifications'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+          ),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: const [
+            NotificationItem(
+              title: 'New Sermon Available',
+              message: 'Watch the latest sermon from our Sunday service',
+              time: '2 hours ago',
+              isRead: false,
+            ),
+            NotificationItem(
+              title: 'Upcoming Event',
+              message: 'Youth Conference starts next week',
+              time: '1 day ago',
+              isRead: true,
+            ),
+            NotificationItem(
+              title: 'Daily Verse',
+              message: 'Your daily verse is ready for reading',
+              time: '2 days ago',
+              isRead: true,
+            ),
+          ],
+        ),
+        bottomNavigationBar: const BottomNavBar(currentIndex: 1),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          NotificationItem(
-            title: 'New Sermon Available',
-            message: 'Watch the latest sermon from our Sunday service',
-            time: '2 hours ago',
-            isRead: false,
-          ),
-          NotificationItem(
-            title: 'Upcoming Event',
-            message: 'Youth Conference starts next week',
-            time: '1 day ago',
-            isRead: true,
-          ),
-          NotificationItem(
-            title: 'Daily Verse',
-            message: 'Your daily verse is ready for reading',
-            time: '2 days ago',
-            isRead: true,
-          ),
-        ],
-      ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 1),
     );
   }
 }

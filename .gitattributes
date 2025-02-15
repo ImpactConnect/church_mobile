@@ -1,0 +1,18 @@
+*.dart text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+
+# Design files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+
+# Flutter specific
+*.dart linguist-language=Dart
+pubspec.* linguist-language=YAML

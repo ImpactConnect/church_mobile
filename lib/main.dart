@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'models/community_post.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'firebase_options.dart';
 import 'utils/toast_utils.dart';
+import 'utils/data_migration.dart';
 import 'screens/bible_screen.dart';
 import 'screens/notes_screen.dart';
 import 'screens/sermon_screen.dart';
-import 'screens/settings_screen.dart';
 import 'screens/devotional_screen.dart';
 import 'screens/live_stream_screen.dart';
 import 'screens/event_screen.dart';
@@ -22,13 +23,17 @@ import 'services/bible_service.dart';
 import 'services/note_service.dart';
 import 'services/sermon_service.dart';
 import 'services/audio_player_service.dart';
+import 'services/community_service.dart';
 import 'widgets/home_carousel.dart';
 import 'widgets/bottom_nav_bar.dart';
-import 'screens/notification_screen.dart';
+import 'widgets/home/upcoming_event_card.dart';
 import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
 import 'screens/library/library_screen.dart';
+import 'screens/members/members_connect_screen.dart';
+import 'screens/community/community_screen.dart';
+import 'screens/community/post_details_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +50,11 @@ Future<void> main() async {
       print('Testing Firestore connection...');
       await FirebaseFirestore.instance.collection('test').limit(1).get();
       print('Firestore connection successful');
+
+      // Run data migrations
+      print('Running data migrations...');
+      await DataMigration.migrateCarouselItems();
+      print('Data migrations completed');
     } catch (e) {
       print('Error connecting to Firestore: $e');
       ToastUtils.showToast('Error connecting to database');
@@ -68,6 +78,7 @@ Future<void> main() async {
   final sermonService = SermonService();
   final audioPlayerService = AudioPlayerService();
   final noteService = NoteService(prefs);
+  final communityService = CommunityService(prefs);
 
   await bibleService.loadBible();
 
@@ -83,6 +94,7 @@ Future<void> main() async {
         sermonService: sermonService,
         audioPlayerService: audioPlayerService,
         noteService: noteService,
+        communityService: communityService,
       ),
     ),
   );
@@ -94,6 +106,7 @@ class MyApp extends StatelessWidget {
   final SermonService sermonService;
   final AudioPlayerService audioPlayerService;
   final NoteService noteService;
+  final CommunityService communityService;
 
   const MyApp({
     Key? key,
@@ -102,6 +115,7 @@ class MyApp extends StatelessWidget {
     required this.sermonService,
     required this.audioPlayerService,
     required this.noteService,
+    required this.communityService,
   }) : super(key: key);
 
   static MyApp of(BuildContext context) {
@@ -126,56 +140,69 @@ class MyApp extends StatelessWidget {
             supportedLocales: LanguageProvider.supportedLocales.values,
             home: const SplashScreen(),
             routes: {
+              '/home': (context) => const HomePage(),
               '/bible': (context) => BibleScreen(
-                bibleService: MyApp.of(context).bibleService,
-              ),
+                    bibleService: MyApp.of(context).bibleService,
+                  ),
+              '/notes': (context) => NotesScreen(
+                    noteService: MyApp.of(context).noteService,
+                  ),
               '/sermons': (context) => SermonScreen(
-                sermonService: MyApp.of(context).sermonService,
-                audioPlayerService: MyApp.of(context).audioPlayerService,
-              ),
-              '/events': (context) => const EventScreen(),
-              '/live': (context) => const LiveStreamScreen(),
-              '/live_streams': (context) => const LiveStreamScreen(),
+                    sermonService: MyApp.of(context).sermonService,
+                    audioPlayerService: MyApp.of(context).audioPlayerService,
+                  ),
               '/devotional': (context) => const DevotionalScreen(),
+              '/live': (context) => const LiveStreamScreen(),
+              '/events': (context) => const EventScreen(),
+              '/hymns': (context) => const HymnScreen(),
               '/blog': (context) => const BlogListScreen(),
               '/library': (context) => const LibraryScreen(),
+              '/members': (context) => const MembersConnectScreen(),
+              '/community': (context) => CommunityScreen(
+                    communityService: MyApp.of(context).communityService,
+                  ),
             },
             onGenerateRoute: (settings) {
               final uri = Uri.parse(settings.name ?? '');
-              final pathSegments = uri.pathSegments;
 
-              if (pathSegments.length == 2) {
-                final id = pathSegments[1];
-                
-                switch (pathSegments[0]) {
-                  case 'sermons':
-                    return MaterialPageRoute(
-                      builder: (context) => SermonScreen(
-                        sermonService: MyApp.of(context).sermonService,
-                        audioPlayerService: MyApp.of(context).audioPlayerService,
-                        initialSermonId: id,
-                      ),
-                    );
-                    
-                  case 'events':
-                    return MaterialPageRoute(
-                      builder: (context) => EventDetailsScreen(
-                        eventId: id,
-                        title: 'Event Details',
-                      ),
-                    );
-                    
-                  case 'blog':
-                    return MaterialPageRoute(
-                      builder: (context) => BlogDetailScreen(
-                        postId: id,
-                      ),
-                    );
+              // Handle event details route
+              if (uri.path == '/event-details') {
+                final eventId = uri.queryParameters['id'];
+                if (eventId != null) {
+                  return MaterialPageRoute(
+                    builder: (context) => EventDetailsScreen(
+                      eventId: eventId,
+                      title: 'Event Details',
+                    ),
+                  );
                 }
               }
-              
-              // If no matching route was found, return null
-              return null;
+
+              // Handle blog detail route
+              if (uri.path == '/blog-detail') {
+                final postId = uri.queryParameters['id'];
+                if (postId != null) {
+                  return MaterialPageRoute(
+                    builder: (context) => BlogDetailScreen(postId: postId),
+                  );
+                }
+              }
+
+              // Handle community post details route
+              if (uri.path == '/community/post') {
+                final post = settings.arguments as CommunityPost;
+                return MaterialPageRoute(
+                  builder: (context) => PostDetailsScreen(
+                    post: post,
+                    communityService: MyApp.of(context).communityService,
+                  ),
+                );
+              }
+
+              // If no matching route is found
+              return MaterialPageRoute(
+                builder: (context) => const SplashScreen(),
+              );
             },
             onUnknownRoute: (settings) {
               return MaterialPageRoute(
@@ -317,25 +344,25 @@ class _HomePageState extends State<HomePage> {
       'label': 'Sermons',
       'color': Colors.orange,
       'route': (BuildContext context) => SermonScreen(
-        sermonService: MyApp.of(context).sermonService,
-        audioPlayerService: MyApp.of(context).audioPlayerService,
-      ),
+            sermonService: MyApp.of(context).sermonService,
+            audioPlayerService: MyApp.of(context).audioPlayerService,
+          ),
     },
     {
       'icon': Icons.menu_book,
       'label': 'Bible',
       'color': Colors.blue,
       'route': (BuildContext context) => BibleScreen(
-        bibleService: MyApp.of(context).bibleService,
-      ),
+            bibleService: MyApp.of(context).bibleService,
+          ),
     },
     {
       'icon': Icons.note_alt,
       'label': 'Notes',
       'color': Colors.green,
       'route': (BuildContext context) => NotesScreen(
-        noteService: MyApp.of(context).noteService,
-      ),
+            noteService: MyApp.of(context).noteService,
+          ),
     },
     {
       'icon': Icons.book,
@@ -351,9 +378,9 @@ class _HomePageState extends State<HomePage> {
       'label': 'Sermons',
       'color': Colors.orange,
       'route': (BuildContext context) => SermonScreen(
-        sermonService: MyApp.of(context).sermonService,
-        audioPlayerService: MyApp.of(context).audioPlayerService,
-      ),
+            sermonService: MyApp.of(context).sermonService,
+            audioPlayerService: MyApp.of(context).audioPlayerService,
+          ),
     },
     {
       'icon': Icons.video_library,
@@ -399,8 +426,8 @@ class _HomePageState extends State<HomePage> {
       'label': 'Notes',
       'color': Colors.amber,
       'route': (BuildContext context) => NotesScreen(
-        noteService: MyApp.of(context).noteService,
-      ),
+            noteService: MyApp.of(context).noteService,
+          ),
     },
     {
       'icon': Icons.event,
@@ -418,14 +445,14 @@ class _HomePageState extends State<HomePage> {
       'icon': Icons.rss_feed,
       'label': 'Blog',
       'color': Colors.blue,
-      'route': (BuildContext context) => BlogListScreen(),
+      'route': (BuildContext context) => const BlogListScreen(),
     },
     {
       'icon': Icons.people,
       'label': 'Members Connect',
       'color': Colors.purple,
-      'route': null,
-    },
+      'route': (BuildContext context) => const MembersConnectScreen(),
+    }
   ];
 
   Widget _buildSectionTitle(String title) {
@@ -568,7 +595,8 @@ class _HomePageState extends State<HomePage> {
         }
 
         final verseData = snapshot.data!;
-        final reference = '${verseData['book']} ${verseData['chapter']}:${verseData['verse']}';
+        final reference =
+            '${verseData['book']} ${verseData['chapter']}:${verseData['verse']}';
 
         return Card(
           margin: const EdgeInsets.all(16),
@@ -639,10 +667,10 @@ class _HomePageState extends State<HomePage> {
                       icon: const Icon(Icons.bookmark_border),
                       onPressed: () {
                         final verse = MyApp.of(context).bibleService.findVerse(
-                          verseData['book'],
-                          verseData['chapter'],
-                          verseData['verse'],
-                        );
+                              verseData['book'],
+                              verseData['chapter'],
+                              verseData['verse'],
+                            );
 
                         if (verse != null) {
                           setState(() {
@@ -719,7 +747,8 @@ class _HomePageState extends State<HomePage> {
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData && snapshot.data!.exists) {
-                      final paths = List<String>.from(snapshot.data!.get('paths') ?? []);
+                      final paths =
+                          List<String>.from(snapshot.data!.get('paths') ?? []);
                       return Column(
                         children: [
                           for (final path in paths) ...[
@@ -737,6 +766,15 @@ class _HomePageState extends State<HomePage> {
                 _buildVerseOfDayCard(),
                 _buildSectionTitle('Media'),
                 _buildButtonGrid(mediaButtons),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      UpcomingEventCard(),
+                    ],
+                  ),
+                ),
                 _buildSectionTitle('Engagement'),
                 _buildButtonGrid(engagementButtons),
                 const SizedBox(height: 24),

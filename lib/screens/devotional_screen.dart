@@ -177,8 +177,9 @@ class _DevotionalScreenState extends State<DevotionalScreen>
   }
 
   Widget _buildCalendar() {
-    if (!_isCalendarVisible)
+    if (!_isCalendarVisible) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     return SliverToBoxAdapter(
       child: Container(
@@ -249,8 +250,9 @@ class _DevotionalScreenState extends State<DevotionalScreen>
   }
 
   Widget _buildTodaysDevotional() {
-    if (_todaysDevotional == null)
+    if (_todaysDevotional == null) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     return SliverToBoxAdapter(
       child: Container(
@@ -362,8 +364,9 @@ class _DevotionalScreenState extends State<DevotionalScreen>
   }
 
   Widget _buildSearchResults() {
-    if (_searchResults.isEmpty)
+    if (_searchResults.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -385,8 +388,9 @@ class _DevotionalScreenState extends State<DevotionalScreen>
   }
 
   Widget _buildRecentDevotionals() {
-    if (_recentDevotionals.isEmpty)
+    if (_recentDevotionals.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     return SliverList(
       delegate: SliverChildListDelegate([

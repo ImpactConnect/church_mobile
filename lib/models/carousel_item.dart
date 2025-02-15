@@ -1,8 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
+import '../screens/in_app_browser_screen.dart';
 
 enum CarouselLinkType {
   inApp,
   external,
+}
+
+enum CarouselItemType {
+  event,
+  blog,
+  sermon,
+  other,
 }
 
 class CarouselItem {
@@ -12,10 +22,11 @@ class CarouselItem {
   final String? imageUrl;
   final String? linkUrl;
   final CarouselLinkType? linkType;
+  final CarouselItemType itemType;
   final DateTime createdAt;
   final bool isActive;
   final int order;
-  final String? itemId; // ID of the specific sermon or event
+  final String? itemId;
 
   CarouselItem({
     required this.id,
@@ -24,6 +35,7 @@ class CarouselItem {
     this.imageUrl,
     this.linkUrl,
     this.linkType,
+    required this.itemType,
     required this.createdAt,
     required this.isActive,
     required this.order,
@@ -31,18 +43,37 @@ class CarouselItem {
   });
 
   factory CarouselItem.fromFirestore(Map<String, dynamic> data, String id) {
+    // Parse linkType from string
+    CarouselLinkType? parsedLinkType;
+    if (data['linkType'] != null) {
+      if (data['linkType'] == 'inApp') {
+        parsedLinkType = CarouselLinkType.inApp;
+      } else if (data['linkType'] == 'external') {
+        parsedLinkType = CarouselLinkType.external;
+      }
+    }
+
+    // Determine itemType based on linkUrl
+    CarouselItemType determinedItemType = CarouselItemType.other;
+    if (data['linkUrl'] != null) {
+      String linkUrl = data['linkUrl'].toString();
+      if (linkUrl.startsWith('/sermons')) {
+        determinedItemType = CarouselItemType.sermon;
+      } else if (linkUrl.startsWith('/blog')) {
+        determinedItemType = CarouselItemType.blog;
+      } else if (linkUrl.startsWith('/events')) {
+        determinedItemType = CarouselItemType.event;
+      }
+    }
+
     return CarouselItem(
       id: id,
       title: data['title'] ?? '',
       description: data['description'],
       imageUrl: data['imageUrl'],
       linkUrl: data['linkUrl'],
-      linkType: data['linkType'] != null 
-          ? CarouselLinkType.values.firstWhere(
-              (e) => e.toString() == 'CarouselLinkType.${data['linkType']}',
-              orElse: () => CarouselLinkType.external,
-            )
-          : null,
+      linkType: parsedLinkType,
+      itemType: determinedItemType,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       isActive: data['isActive'] ?? true,
       order: data['order'] ?? 0,
@@ -50,17 +81,58 @@ class CarouselItem {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
       'title': title,
       'description': description,
       'imageUrl': imageUrl,
       'linkUrl': linkUrl,
-      'linkType': linkType?.toString().split('.').last,
+      'linkType': linkType?.toString().split('.').last.toLowerCase(),
+      'itemType': itemType.toString().split('.').last.toLowerCase(),
       'createdAt': Timestamp.fromDate(createdAt),
       'isActive': isActive,
       'order': order,
       'itemId': itemId,
     };
+  }
+
+  Future<void> handleNavigation(BuildContext context) async {
+    if (linkType == null || linkUrl == null) return;
+
+    if (linkType == CarouselLinkType.external) {
+      // Handle external URL in in-app browser
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => InAppBrowserScreen(
+            url: linkUrl!,
+            title: title,
+          ),
+        ),
+      );
+    } else {
+      // Handle in-app navigation
+      String route = linkUrl!;
+      
+      // If there's an itemId, append it to the route for specific item navigation
+      if (itemId != null && itemId!.isNotEmpty) {
+        switch (itemType) {
+          case CarouselItemType.sermon:
+            route = '/sermon-details/$itemId';
+            break;
+          case CarouselItemType.blog:
+            route = '/blog-post/$itemId';
+            break;
+          case CarouselItemType.event:
+            route = '/event-details/$itemId';
+            break;
+          default:
+            // Keep the original route if no specific handling needed
+            break;
+        }
+      }
+      
+      Navigator.pushNamed(context, route);
+    }
   }
 }

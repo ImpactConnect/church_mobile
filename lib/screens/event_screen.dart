@@ -170,11 +170,11 @@ class _EventScreenState extends State<EventScreen> {
                         color: Colors.grey[600],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _addSampleEvents,
-                      child: const Text('Add Sample Events'),
-                    ),
+                    // const SizedBox(height: 16),
+                    // ElevatedButton(
+                    //   onPressed: _addSampleEvents,
+                    //   child: const Text('Add Sample Events'),
+                    // ),
                   ],
                 ),
               ),

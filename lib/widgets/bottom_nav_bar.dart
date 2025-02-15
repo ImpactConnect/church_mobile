@@ -41,7 +41,7 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      onTap: (index) => _onItemTapped(context, index),
+      type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -52,10 +52,30 @@ class BottomNavBar extends StatelessWidget {
           label: 'Notifications',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Settings',
+          icon: Icon(Icons.people),
+          label: 'Community',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profile',
         ),
       ],
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            Navigator.pushReplacementNamed(context, '/home');
+            break;
+          case 1:
+            Navigator.pushReplacementNamed(context, '/notifications');
+            break;
+          case 2:
+            Navigator.pushReplacementNamed(context, '/community');
+            break;
+          case 3:
+            Navigator.pushReplacementNamed(context, '/profile');
+            break;
+        }
+      },
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.grey,
     );

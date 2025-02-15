@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import '../providers/theme_provider.dart';
-import '../providers/language_provider.dart';
 import '../services/storage_manager.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'help_support_screen.dart';
@@ -18,7 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _appSize = '...';
   String _cacheSize = '...';
   bool _isLoading = true;
-  String _appVersion = '';
+  final String _appVersion = '';
 
   @override
   void initState() {
@@ -35,33 +34,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> _showLanguageDialog() async {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: languageProvider.supportedLanguages
-              .map(
-                (lang) => ListTile(
-                  title: Text(lang),
-                  trailing: lang == languageProvider.currentLanguage
-                      ? const Icon(Icons.check, color: Colors.blue)
-                      : null,
-                  onTap: () {
-                    languageProvider.setLanguage(lang);
-                    Navigator.pop(context);
-                  },
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
   }
 
   Future<void> _showClearCacheDialog() async {
@@ -99,99 +71,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final languageProvider = Provider.of<LanguageProvider>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacementNamed(context, '/home');
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Settings'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+          ),
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                children: [
+                  // Appearance Section
+                  _buildSectionHeader('APPEARANCE'),
+                  ListTile(
+                    leading: const Icon(Icons.dark_mode),
+                    title: const Text('Dark Mode'),
+                    subtitle: const Text('Toggle dark theme'),
+                    trailing: Switch(
+                      value: themeProvider.themeMode == ThemeMode.dark,
+                      onChanged: (value) => themeProvider.toggleTheme(),
+                    ),
+                  ),
+                  _buildDivider(),
+
+                  // Storage Section
+                  _buildSectionHeader('STORAGE'),
+                  ListTile(
+                    leading: const Icon(Icons.storage),
+                    title: const Text('App Storage'),
+                    subtitle: Text('App Size: $_appSize'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.cached),
+                    title: const Text('Cache'),
+                    subtitle: Text('Cache Size: $_cacheSize'),
+                    trailing: TextButton(
+                      onPressed: _showClearCacheDialog,
+                      child: const Text('CLEAR'),
+                    ),
+                  ),
+                  _buildDivider(),
+
+                  // Help & Support
+                  _buildSectionHeader('HELP & SUPPORT'),
+                  ListTile(
+                    leading: const Icon(Icons.help_outline),
+                    title: const Text('Help Center'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpSupportScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.mail_outline),
+                    title: const Text('Contact Support'),
+                    onTap: () => _launchURL('mailto:support@yourchurch.com'),
+                  ),
+                  _buildDivider(),
+
+                  // About Section
+                  _buildSectionHeader('ABOUT'),
+                  ListTile(
+                    leading: const Icon(Icons.info_outline),
+                    title: const Text('About'),
+                    subtitle: Text('Version $_appVersion'),
+                    onTap: _showAboutDialog,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.policy_outlined),
+                    title: const Text('Privacy Policy'),
+                    onTap: () => _launchURL('https://yourchurch.com/privacy'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.description_outlined),
+                    title: const Text('Terms of Service'),
+                    onTap: () => _launchURL('https://yourchurch.com/terms'),
+                  ),
+                ],
+              ),
+        bottomNavigationBar: const BottomNavBar(currentIndex: 2),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              children: [
-                // Appearance Section
-                _buildSectionHeader('APPEARANCE'),
-                ListTile(
-                  leading: const Icon(Icons.dark_mode),
-                  title: const Text('Dark Mode'),
-                  subtitle: const Text('Toggle dark theme'),
-                  trailing: Switch(
-                    value: themeProvider.themeMode == ThemeMode.dark,
-                    onChanged: (value) => themeProvider.toggleTheme(),
-                  ),
-                ),
-                _buildDivider(),
-
-                // Language & Region
-                _buildSectionHeader('LANGUAGE & REGION'),
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('Language'),
-                  subtitle: Text(languageProvider.currentLanguage),
-                  onTap: _showLanguageDialog,
-                ),
-                _buildDivider(),
-
-                // Storage Section
-                _buildSectionHeader('STORAGE'),
-                ListTile(
-                  leading: const Icon(Icons.storage),
-                  title: const Text('App Storage'),
-                  subtitle: Text('App Size: $_appSize'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.cached),
-                  title: const Text('Cache'),
-                  subtitle: Text('Cache Size: $_cacheSize'),
-                  trailing: TextButton(
-                    onPressed: _showClearCacheDialog,
-                    child: const Text('CLEAR'),
-                  ),
-                ),
-                _buildDivider(),
-
-                // Help & Support
-                _buildSectionHeader('HELP & SUPPORT'),
-                ListTile(
-                  leading: const Icon(Icons.help_outline),
-                  title: const Text('Help Center'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HelpSupportScreen(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.mail_outline),
-                  title: const Text('Contact Support'),
-                  onTap: () => _launchURL('mailto:support@yourchurch.com'),
-                ),
-                _buildDivider(),
-
-                // About Section
-                _buildSectionHeader('ABOUT'),
-                ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('About'),
-                  subtitle: Text('Version $_appVersion'),
-                  onTap: _showAboutDialog,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.policy_outlined),
-                  title: const Text('Privacy Policy'),
-                  onTap: () => _launchURL('https://yourchurch.com/privacy'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.description_outlined),
-                  title: const Text('Terms of Service'),
-                  onTap: () => _launchURL('https://yourchurch.com/terms'),
-                ),
-              ],
-            ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 2),
     );
   }
 
