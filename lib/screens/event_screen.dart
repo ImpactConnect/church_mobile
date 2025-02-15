@@ -199,14 +199,13 @@ class _EventScreenState extends State<EventScreen> {
 }
 
 class _EventCard extends StatelessWidget {
-  final app_event.Event event;
-  final VoidCallback onTap;
-
   const _EventCard({
     Key? key,
     required this.event,
     required this.onTap,
   }) : super(key: key);
+  final app_event.Event event;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +217,8 @@ class _EventCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(4)),
               child: Image.network(
                 event.imageUrl,
                 height: 200,
@@ -269,12 +269,11 @@ class _EventCard extends StatelessWidget {
 }
 
 class _EventDetailsSheet extends StatefulWidget {
-  final app_event.Event event;
-
   const _EventDetailsSheet({
     Key? key,
     required this.event,
   }) : super(key: key);
+  final app_event.Event event;
 
   @override
   State<_EventDetailsSheet> createState() => _EventDetailsSheetState();
@@ -343,9 +342,11 @@ class _EventDetailsSheetState extends State<_EventDetailsSheet> {
         location: widget.event.venue,
       );
 
-      final createEventResult = await _deviceCalendarPlugin.createOrUpdateEvent(eventToCreate);
+      final createEventResult =
+          await _deviceCalendarPlugin.createOrUpdateEvent(eventToCreate);
       if (createEventResult?.isSuccess ?? false) {
-        ToastUtils.showToast('${widget.event.title} has been added to your calendar');
+        ToastUtils.showToast(
+            '${widget.event.title} has been added to your calendar');
       } else {
         ToastUtils.showToast('Failed to add event to calendar');
       }
@@ -424,12 +425,14 @@ ${widget.event.description}
                         _DetailItem(
                           icon: Icons.calendar_today,
                           title: 'Start Date',
-                          content: DateFormat('MMM d, y').format(widget.event.startDate),
+                          content: DateFormat('MMM d, y')
+                              .format(widget.event.startDate),
                         ),
                         _DetailItem(
                           icon: Icons.calendar_today,
                           title: 'End Date',
-                          content: DateFormat('MMM d, y').format(widget.event.endDate),
+                          content: DateFormat('MMM d, y')
+                              .format(widget.event.endDate),
                         ),
                         _DetailItem(
                           icon: Icons.access_time,
@@ -487,16 +490,15 @@ ${widget.event.description}
 }
 
 class _DetailItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String content;
-
   const _DetailItem({
     Key? key,
     required this.icon,
     required this.title,
     required this.content,
   }) : super(key: key);
+  final IconData icon;
+  final String title;
+  final String content;
 
   @override
   Widget build(BuildContext context) {
@@ -535,16 +537,15 @@ class _DetailItem extends StatelessWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
   const _ActionButton({
     Key? key,
     required this.icon,
     required this.label,
     required this.onTap,
   }) : super(key: key);
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

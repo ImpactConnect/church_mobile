@@ -3,14 +3,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class InAppBrowserScreen extends StatefulWidget {
-  final String url;
-  final String title;
-
   const InAppBrowserScreen({
     Key? key,
     required this.url,
     required this.title,
   }) : super(key: key);
+  final String url;
+  final String title;
 
   @override
   State<InAppBrowserScreen> createState() => _InAppBrowserScreenState();
@@ -48,11 +47,13 @@ class _InAppBrowserScreenState extends State<InAppBrowserScreen> {
   Future<void> _openInExternalBrowser() async {
     final Uri url = Uri.parse(widget.url);
     if (await url_launcher.canLaunchUrl(url)) {
-      await url_launcher.launchUrl(url, mode: url_launcher.LaunchMode.externalApplication);
+      await url_launcher.launchUrl(url,
+          mode: url_launcher.LaunchMode.externalApplication);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open link in external browser')),
+          const SnackBar(
+              content: Text('Could not open link in external browser')),
         );
       }
     }

@@ -6,9 +6,8 @@ import 'package:church_mobile/models/testimony.dart';
 import 'package:church_mobile/widgets/members/member_details_dialog.dart';
 import 'package:church_mobile/widgets/testimony_details_dialog.dart';
 import 'package:church_mobile/screens/members/members_directory_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:church_mobile/services/community_service.dart';
-import 'package:church_mobile/widgets/phone_verification_dialog.dart';
+import '../../models/community_user.dart';
+import '../community/community_login_screen.dart';
 
 class MembersConnectScreen extends StatefulWidget {
   const MembersConnectScreen({Key? key}) : super(key: key);
@@ -229,35 +228,28 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
     );
   }
 
-  Future<void> _showPhoneVerificationDialog(BuildContext context) async {
-    final communityService =
-        Provider.of<CommunityService>(context, listen: false);
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => PhoneVerificationDialog(
-        communityService: communityService,
+  void _navigateToCommunityLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CommunityLoginScreen(),
       ),
     );
-
-    if (result == true) {
-      if (!mounted) return;
-      Navigator.pushNamed(context, '/community');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Members Connect'),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.people),
-      //       onPressed: () => _showPhoneVerificationDialog(context),
-      //     ),
-      //   ],
-      // ),
+      appBar: AppBar(
+        title: const Text('Members Connect'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.group_add),
+            onPressed: _navigateToCommunityLogin,
+            tooltip: 'Community Access',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _handleRefresh,
@@ -460,7 +452,7 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
                             return const Card(
                               child: Padding(
                                 padding: EdgeInsets.all(16.0),
-                                child: Text('No celebrations today'),
+                                child: Text('No celebrants today'),
                               ),
                             );
                           }
@@ -579,8 +571,13 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
                               icon: Icons.group,
                               label: 'Community',
                               color: Colors.blue,
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/community'),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CommunityLoginScreen(),
+                                ),
+                              ),
                             ),
                             _buildActionButton(
                               icon: Icons.people,

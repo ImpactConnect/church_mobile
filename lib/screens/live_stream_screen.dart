@@ -35,7 +35,7 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
     _setupStream();
   }
 
-  void _setupStream() async {
+  Future<void> _setupStream() async {
     try {
       print('Fetching live stream data...');
       // Simplified query to only check isLive
@@ -134,8 +134,8 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
         return;
       }
 
-      String? url = data['url'];
-      String platform =
+      final String? url = data['url'];
+      final String platform =
           (data['platform'] ?? 'youtube').toString().toLowerCase();
 
       print('Retrieved URL from Firestore: $url');
@@ -174,11 +174,11 @@ class _LiveStreamScreenState extends State<LiveStreamScreen>
   }
 
   String _getVideoId(String url) {
-    RegExp regExp = RegExp(
+    final RegExp regExp = RegExp(
       r'^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*',
     );
 
-    Match? match = regExp.firstMatch(url);
+    final Match? match = regExp.firstMatch(url);
     return match?.group(1) ?? '';
   }
 

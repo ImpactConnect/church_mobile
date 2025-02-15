@@ -6,16 +6,15 @@ import '../services/bible_service.dart';
 import 'book_chapter_selection_screen.dart';
 
 class BibleScreen extends StatefulWidget {
-  final BibleService? bibleService;
-  final Book? initialBook;
-  final Chapter? initialChapter;
-
   const BibleScreen({
     super.key,
     required this.bibleService,
     this.initialBook,
     this.initialChapter,
   });
+  final BibleService? bibleService;
+  final Book? initialBook;
+  final Chapter? initialChapter;
 
   @override
   _BibleScreenState createState() => _BibleScreenState();

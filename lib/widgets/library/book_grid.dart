@@ -3,12 +3,11 @@ import '../../models/book.dart';
 import 'book_card.dart';
 
 class BookGrid extends StatelessWidget {
-  final List<Book> books;
-
   const BookGrid({
     Key? key,
     required this.books,
   }) : super(key: key);
+  final List<Book> books;
 
   @override
   Widget build(BuildContext context) {

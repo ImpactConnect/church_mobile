@@ -3,14 +3,13 @@ import 'package:share_plus/share_plus.dart';
 import 'hymn_screen.dart';
 
 class HymnDetailScreen extends StatefulWidget {
-  final Hymn hymn;
-  final Function(bool)? onBookmarkChanged;
-
   const HymnDetailScreen({
-    Key? key, 
+    Key? key,
     required this.hymn,
     this.onBookmarkChanged,
   }) : super(key: key);
+  final Hymn hymn;
+  final Function(bool)? onBookmarkChanged;
 
   @override
   State<HymnDetailScreen> createState() => _HymnDetailScreenState();
@@ -57,7 +56,9 @@ ${widget.hymn.lyrics}
               actions: [
                 IconButton(
                   icon: Icon(
-                    widget.hymn.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                    widget.hymn.isBookmarked
+                        ? Icons.bookmark
+                        : Icons.bookmark_border,
                     color: Colors.white,
                   ),
                   onPressed: _toggleBookmark,
@@ -176,19 +177,20 @@ ${widget.hymn.lyrics}
               ),
               const SizedBox(height: 12),
               ...stanzas[i].map((line) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  line,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    height: 1.6,
-                  ),
-                ),
-              )),
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      line,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        height: 1.6,
+                      ),
+                    ),
+                  )),
               if (chorus != null && i < stanzas.length - 1) ...[
                 const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -204,16 +206,16 @@ ${widget.hymn.lyrics}
                 ),
                 const SizedBox(height: 12),
                 ...chorus.map((line) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    line,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      height: 1.6,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                )),
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        line,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          height: 1.6,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    )),
               ],
             ],
           ),

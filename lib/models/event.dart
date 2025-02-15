@@ -1,16 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Event {
-  final String id;
-  final String title;
-  final String description;
-  final String imageUrl;
-  final DateTime startDate;
-  final DateTime endDate;
-  final String venue;
-  final String programmeTime;
-  final bool isUpcoming;
-
   Event({
     required this.id,
     required this.title,
@@ -24,7 +14,7 @@ class Event {
   });
 
   factory Event.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Event(
       id: doc.id,
       title: data['title'] ?? '',
@@ -37,6 +27,15 @@ class Event {
       isUpcoming: data['isUpcoming'] ?? false,
     );
   }
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String venue;
+  final String programmeTime;
+  final bool isUpcoming;
 
   Map<String, dynamic> toMap() {
     return {

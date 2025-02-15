@@ -42,9 +42,9 @@ dependencies:
   universal_html: ^2.2.4
   
   # Firebase
-  firebase_core: ^2.15.1
+  firebase_core: ^2.27.0
   firebase_auth: ^4.17.8
-  cloud_firestore: ^4.15.5
+  cloud_firestore: ^4.15.8
   firebase_storage: ^11.6.6
   
   # UI Components

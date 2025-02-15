@@ -1,18 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Sermon {
-  final String id;
-  final String title;
-  final String preacherName;
-  final String category;
-  final List<String> tags;
-  final String thumbnailUrl;
-  final String audioUrl;
-  final DateTime dateCreated;
-  bool isBookmarked;
-  bool isDownloaded;
-  String? localAudioPath;
-
   Sermon({
     required this.id,
     required this.title,
@@ -40,7 +28,8 @@ class Sermon {
       if (timestamp is Timestamp) {
         dateCreated = timestamp.toDate();
       } else {
-        dateCreated = DateTime.now(); // Fallback to current time if null or invalid
+        dateCreated =
+            DateTime.now(); // Fallback to current time if null or invalid
       }
     } catch (e) {
       dateCreated = DateTime.now(); // Fallback to current time on error
@@ -76,6 +65,17 @@ class Sermon {
       localAudioPath: json['localAudioPath'] as String?,
     );
   }
+  final String id;
+  final String title;
+  final String preacherName;
+  final String category;
+  final List<String> tags;
+  final String thumbnailUrl;
+  final String audioUrl;
+  final DateTime dateCreated;
+  bool isBookmarked;
+  bool isDownloaded;
+  String? localAudioPath;
 
   Map<String, dynamic> toJson() {
     return {

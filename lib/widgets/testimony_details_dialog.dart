@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:church_mobile/models/testimony.dart';
 
 class TestimonyDetailsDialog extends StatelessWidget {
-  final Testimony testimony;
-
   const TestimonyDetailsDialog({Key? key, required this.testimony})
       : super(key: key);
+  final Testimony testimony;
 
   @override
   Widget build(BuildContext context) {

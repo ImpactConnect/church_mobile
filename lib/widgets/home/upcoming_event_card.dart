@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../screens/event_details_screen.dart';
 
 class UpcomingEventCard extends StatelessWidget {
@@ -21,10 +22,11 @@ class UpcomingEventCard extends StatelessWidget {
           .limit(1)
           .snapshots(),
       builder: (context, snapshot) {
-        debugPrint('UpcomingEventCard Builder State: ${snapshot.connectionState}');
+        debugPrint(
+            'UpcomingEventCard Builder State: ${snapshot.connectionState}');
         debugPrint('Has error: ${snapshot.hasError}');
         debugPrint('Has data: ${snapshot.hasData}');
-        
+
         if (snapshot.hasError) {
           debugPrint('Error in UpcomingEventCard: ${snapshot.error}');
           debugPrint('Error Stack Trace: ${snapshot.stackTrace}');
@@ -178,7 +180,8 @@ class UpcomingEventCard extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.church, size: 50, color: Colors.grey[400]),
+                              Icon(Icons.church,
+                                  size: 50, color: Colors.grey[400]),
                               const SizedBox(height: 8),
                               Text(
                                 eventData['title'] ?? 'Church Event',
@@ -236,7 +239,8 @@ class UpcomingEventCard extends StatelessWidget {
                     if (eventData['startDate'] != null) ...[
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                          const Icon(Icons.calendar_today,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
                             DateFormat('MMM d, yyyy').format(
@@ -245,7 +249,8 @@ class UpcomingEventCard extends StatelessWidget {
                             style: const TextStyle(color: Colors.grey),
                           ),
                           if (eventData['programmeTime'] != null) ...[
-                            const Text(' • ', style: TextStyle(color: Colors.grey)),
+                            const Text(' • ',
+                                style: TextStyle(color: Colors.grey)),
                             Text(
                               eventData['programmeTime'],
                               style: const TextStyle(color: Colors.grey),
@@ -258,7 +263,8 @@ class UpcomingEventCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                          const Icon(Icons.location_on,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -276,8 +282,10 @@ class UpcomingEventCard extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          debugPrint('Opening event details for ID: ${eventDoc.id}');
-                          debugPrint('Event data being passed: ${eventData.toString()}');
+                          debugPrint(
+                              'Opening event details for ID: ${eventDoc.id}');
+                          debugPrint(
+                              'Event data being passed: ${eventData.toString()}');
                           Navigator.push(
                             context,
                             MaterialPageRoute(

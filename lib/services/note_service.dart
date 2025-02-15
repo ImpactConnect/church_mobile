@@ -3,12 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/note_model.dart';
 
 class NoteService {
-  static const String _notesKey = 'user_notes';
-  SharedPreferences? _prefs;
-
   NoteService(SharedPreferences? prefs) {
     _prefs = prefs;
   }
+  static const String _notesKey = 'user_notes';
+  SharedPreferences? _prefs;
 
   static Future<NoteService> create() async {
     final prefs = await SharedPreferences.getInstance();

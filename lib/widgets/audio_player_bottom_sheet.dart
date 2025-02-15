@@ -3,16 +3,15 @@ import '../models/sermon.dart';
 import '../services/audio_player_service.dart';
 
 class AudioPlayerBottomSheet extends StatefulWidget {
-  final Sermon sermon;
-  final AudioPlayerService audioPlayerService;
-  final VoidCallback onClose;
-
   const AudioPlayerBottomSheet({
     Key? key,
     required this.sermon,
     required this.audioPlayerService,
     required this.onClose,
   }) : super(key: key);
+  final Sermon sermon;
+  final AudioPlayerService audioPlayerService;
+  final VoidCallback onClose;
 
   @override
   State<AudioPlayerBottomSheet> createState() => _AudioPlayerBottomSheetState();
@@ -54,7 +53,9 @@ class _AudioPlayerBottomSheetState extends State<AudioPlayerBottomSheet> {
     final hours = twoDigits(duration.inHours);
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return duration.inHours > 0 ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
+    return duration.inHours > 0
+        ? '$hours:$minutes:$seconds'
+        : '$minutes:$seconds';
   }
 
   @override
@@ -111,15 +112,18 @@ class _AudioPlayerBottomSheetState extends State<AudioPlayerBottomSheet> {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 4.0,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+                  thumbShape:
+                      const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                  overlayShape:
+                      const RoundSliderOverlayShape(overlayRadius: 16.0),
                 ),
                 child: Slider(
                   value: _position.inMilliseconds.toDouble(),
                   min: 0,
                   max: _duration.inMilliseconds.toDouble(),
                   onChanged: (value) {
-                    widget.audioPlayerService.seek(Duration(milliseconds: value.toInt()));
+                    widget.audioPlayerService
+                        .seek(Duration(milliseconds: value.toInt()));
                   },
                 ),
               ),
@@ -143,11 +147,14 @@ class _AudioPlayerBottomSheetState extends State<AudioPlayerBottomSheet> {
               IconButton(
                 icon: const Icon(Icons.replay_10),
                 onPressed: () {
-                  widget.audioPlayerService.seek(_position - const Duration(seconds: 10));
+                  widget.audioPlayerService
+                      .seek(_position - const Duration(seconds: 10));
                 },
               ),
               IconButton(
-                icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
+                icon: Icon(_isPlaying
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_filled),
                 iconSize: 48,
                 onPressed: () {
                   if (_isPlaying) {
@@ -160,7 +167,8 @@ class _AudioPlayerBottomSheetState extends State<AudioPlayerBottomSheet> {
               IconButton(
                 icon: const Icon(Icons.forward_30),
                 onPressed: () {
-                  widget.audioPlayerService.seek(_position + const Duration(seconds: 30));
+                  widget.audioPlayerService
+                      .seek(_position + const Duration(seconds: 30));
                 },
               ),
             ],

@@ -14,16 +14,17 @@ class DataMigration {
     }
 
     try {
-      final carouselRef = FirebaseFirestore.instance.collection('carousel_items');
-      
+      final carouselRef =
+          FirebaseFirestore.instance.collection('carousel_items');
+
       // Get all carousel items
       final snapshot = await carouselRef.get();
-      
+
       // Update each item
       for (var doc in snapshot.docs) {
         final data = doc.data();
         String? itemType;
-        
+
         // Determine item type based on linkUrl
         if (data['linkUrl'] != null) {
           final linkUrl = data['linkUrl'] as String;
@@ -39,7 +40,7 @@ class DataMigration {
         } else {
           itemType = 'other';
         }
-        
+
         // Update the document with the new itemType field
         await doc.reference.update({
           'itemType': itemType,
@@ -52,7 +53,7 @@ class DataMigration {
     } catch (e) {
       print('Error during carousel migration: $e');
       // Don't mark as completed if there was an error
-      throw e;
+      rethrow;
     }
   }
 }

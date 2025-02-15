@@ -4,20 +4,21 @@ import '../services/bible_service.dart';
 import 'bible_screen.dart';
 
 class BookChapterSelectionScreen extends StatefulWidget {
-  final BibleService? bibleService;
-  final List<Book> books;
-
   const BookChapterSelectionScreen({
     Key? key,
     required this.bibleService,
     required this.books,
   }) : super(key: key);
+  final BibleService? bibleService;
+  final List<Book> books;
 
   @override
-  State<BookChapterSelectionScreen> createState() => _BookChapterSelectionScreenState();
+  State<BookChapterSelectionScreen> createState() =>
+      _BookChapterSelectionScreenState();
 }
 
-class _BookChapterSelectionScreenState extends State<BookChapterSelectionScreen> {
+class _BookChapterSelectionScreenState
+    extends State<BookChapterSelectionScreen> {
   Book? selectedBook;
 
   @override
@@ -50,7 +51,8 @@ class _BookChapterSelectionScreenState extends State<BookChapterSelectionScreen>
                     title: Text(
                       book.name,
                       style: TextStyle(
-                        color: isSelected ? Theme.of(context).primaryColor : null,
+                        color:
+                            isSelected ? Theme.of(context).primaryColor : null,
                         fontWeight: isSelected ? FontWeight.bold : null,
                         fontSize: 14,
                       ),
@@ -76,7 +78,8 @@ class _BookChapterSelectionScreenState extends State<BookChapterSelectionScreen>
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
                       childAspectRatio: 1.2,
                       crossAxisSpacing: 10,

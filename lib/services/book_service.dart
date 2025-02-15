@@ -15,7 +15,8 @@ class BookService {
     String? author,
     List<String>? topics,
   }) async {
-    Query query = _firestore.collection('books').where('isActive', isEqualTo: true);
+    Query query =
+        _firestore.collection('books').where('isActive', isEqualTo: true);
 
     // Apply filters
     if (category != null) {
@@ -37,10 +38,11 @@ class BookService {
       final searchLower = searchQuery.toLowerCase();
       books = books.where((book) {
         return book.title.toLowerCase().contains(searchLower) ||
-               book.author.toLowerCase().contains(searchLower) ||
-               book.description.toLowerCase().contains(searchLower) ||
-               book.category.toLowerCase().contains(searchLower) ||
-               book.topics.any((topic) => topic.toLowerCase().contains(searchLower));
+            book.author.toLowerCase().contains(searchLower) ||
+            book.description.toLowerCase().contains(searchLower) ||
+            book.category.toLowerCase().contains(searchLower) ||
+            book.topics
+                .any((topic) => topic.toLowerCase().contains(searchLower));
       }).toList();
     }
 
@@ -58,9 +60,7 @@ class BookService {
           .limit(10)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Book.fromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => Book.fromFirestore(doc)).toList();
     } catch (e) {
       print('Error getting trending books: $e');
       return [];
@@ -91,9 +91,7 @@ class BookService {
           .limit(10)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Book.fromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => Book.fromFirestore(doc)).toList();
     } catch (e) {
       print('Error getting most downloaded books: $e');
       return [];
@@ -111,9 +109,7 @@ class BookService {
           .limit(10)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => Book.fromFirestore(doc))
-          .toList();
+      return querySnapshot.docs.map((doc) => Book.fromFirestore(doc)).toList();
     } catch (e) {
       print('Error getting recommended books: $e');
       return [];
@@ -239,7 +235,7 @@ class BookService {
           .where('isActive', isEqualTo: true)
           .get();
 
-      Set<String> topics = {};
+      final Set<String> topics = {};
       for (var doc in querySnapshot.docs) {
         final bookTopics = List<String>.from(doc.data()['topics'] ?? []);
         topics.addAll(bookTopics);

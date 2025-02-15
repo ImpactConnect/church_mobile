@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 class LibrarySearchBar extends StatefulWidget {
-  final Function(String) onSearch;
-
   const LibrarySearchBar({
     Key? key,
     required this.onSearch,
   }) : super(key: key);
+  final Function(String) onSearch;
 
   @override
   State<LibrarySearchBar> createState() => _LibrarySearchBarState();
@@ -47,7 +46,8 @@ class _LibrarySearchBarState extends State<LibrarySearchBar> {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
         ),
         onChanged: _handleSearch,
         textInputAction: TextInputAction.search,

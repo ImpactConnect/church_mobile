@@ -5,9 +5,8 @@ import 'note_editor_screen.dart';
 import 'note_view_screen.dart';
 
 class NotesScreen extends StatefulWidget {
-  final NoteService noteService;
-
   const NotesScreen({Key? key, required this.noteService}) : super(key: key);
+  final NoteService noteService;
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -36,7 +35,7 @@ class _NotesScreenState extends State<NotesScreen> {
     setState(() {
       _filteredNotes = _notes.where((note) {
         return note.title.toLowerCase().contains(query.toLowerCase()) ||
-               note.content.toLowerCase().contains(query.toLowerCase());
+            note.content.toLowerCase().contains(query.toLowerCase());
       }).toList();
     });
   }
@@ -126,7 +125,8 @@ class _NotesScreenState extends State<NotesScreen> {
               (context, index) {
                 final note = _filteredNotes[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
                     title: Text(
                       note.title,
@@ -144,10 +144,12 @@ class _NotesScreenState extends State<NotesScreen> {
                       children: [
                         Text(
                           _formatDate(note.lastModified),
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 12),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
                           onPressed: () => _deleteNote(note),
                         ),
                       ],

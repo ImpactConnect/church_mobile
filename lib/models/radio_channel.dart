@@ -1,12 +1,4 @@
 class RadioChannel {
-  final String id;
-  final String name;
-  final String description;
-  final String imageUrl;
-  final String streamUrl;
-  final bool isLive;
-  final List<RadioProgram>? programs;
-
   RadioChannel({
     required this.id,
     required this.name,
@@ -32,21 +24,16 @@ class RadioChannel {
           : null,
     );
   }
+  final String id;
+  final String name;
+  final String description;
+  final String imageUrl;
+  final String streamUrl;
+  final bool isLive;
+  final List<RadioProgram>? programs;
 }
 
 class RadioProgram {
-  final String id;
-  final String title;
-  final String description;
-  final String imageUrl;
-  final String audioUrl;
-  final DateTime publishDate;
-  final Duration duration;
-  final String host;
-  final List<String> tags;
-  bool isDownloaded;
-  bool isFavorite;
-
   RadioProgram({
     required this.id,
     required this.title,
@@ -76,4 +63,15 @@ class RadioProgram {
       isFavorite: json['is_favorite'] ?? false,
     );
   }
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String audioUrl;
+  final DateTime publishDate;
+  final Duration duration;
+  final String host;
+  final List<String> tags;
+  bool isDownloaded;
+  bool isFavorite;
 }

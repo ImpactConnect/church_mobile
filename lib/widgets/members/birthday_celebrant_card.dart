@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 class BirthdayCelebrantCard extends StatelessWidget {
-  final VoidCallback onTap;
-
   const BirthdayCelebrantCard({
     Key? key,
     required this.onTap,
   }) : super(key: key);
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

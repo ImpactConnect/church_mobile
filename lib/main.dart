@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'models/community_post.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,7 +22,6 @@ import 'services/bible_service.dart';
 import 'services/note_service.dart';
 import 'services/sermon_service.dart';
 import 'services/audio_player_service.dart';
-import 'services/community_service.dart';
 import 'widgets/home_carousel.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'widgets/home/upcoming_event_card.dart';
@@ -32,8 +30,6 @@ import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
 import 'screens/library/library_screen.dart';
 import 'screens/members/members_connect_screen.dart';
-import 'screens/community/community_screen.dart';
-import 'screens/community/post_details_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,7 +74,6 @@ Future<void> main() async {
   final sermonService = SermonService();
   final audioPlayerService = AudioPlayerService();
   final noteService = NoteService(prefs);
-  final communityService = CommunityService(prefs);
 
   await bibleService.loadBible();
 
@@ -94,20 +89,12 @@ Future<void> main() async {
         sermonService: sermonService,
         audioPlayerService: audioPlayerService,
         noteService: noteService,
-        communityService: communityService,
       ),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final SharedPreferences prefs;
-  final BibleService bibleService;
-  final SermonService sermonService;
-  final AudioPlayerService audioPlayerService;
-  final NoteService noteService;
-  final CommunityService communityService;
-
   const MyApp({
     Key? key,
     required this.prefs,
@@ -115,8 +102,12 @@ class MyApp extends StatelessWidget {
     required this.sermonService,
     required this.audioPlayerService,
     required this.noteService,
-    required this.communityService,
   }) : super(key: key);
+  final SharedPreferences prefs;
+  final BibleService bibleService;
+  final SermonService sermonService;
+  final AudioPlayerService audioPlayerService;
+  final NoteService noteService;
 
   static MyApp of(BuildContext context) {
     final _MyAppScope scope =
@@ -158,9 +149,6 @@ class MyApp extends StatelessWidget {
               '/blog': (context) => const BlogListScreen(),
               '/library': (context) => const LibraryScreen(),
               '/members': (context) => const MembersConnectScreen(),
-              '/community': (context) => CommunityScreen(
-                    communityService: MyApp.of(context).communityService,
-                  ),
             },
             onGenerateRoute: (settings) {
               final uri = Uri.parse(settings.name ?? '');
@@ -188,13 +176,14 @@ class MyApp extends StatelessWidget {
                 }
               }
 
-              // Handle community post details route
-              if (uri.path == '/community/post') {
-                final post = settings.arguments as CommunityPost;
+              // Handle sermon detail route
+              if (uri.path.startsWith('/sermons/')) {
+                final sermonId = uri.pathSegments.last;
                 return MaterialPageRoute(
-                  builder: (context) => PostDetailsScreen(
-                    post: post,
-                    communityService: MyApp.of(context).communityService,
+                  builder: (context) => SermonScreen(
+                    sermonService: MyApp.of(context).sermonService,
+                    audioPlayerService: MyApp.of(context).audioPlayerService,
+                    initialSermonId: sermonId,
                   ),
                 );
               }
@@ -222,13 +211,12 @@ class MyApp extends StatelessWidget {
 }
 
 class _MyAppScope extends InheritedWidget {
-  final MyApp data;
-
   const _MyAppScope({
     Key? key,
     required this.data,
     required Widget child,
   }) : super(key: key, child: child);
+  final MyApp data;
 
   @override
   bool updateShouldNotify(_MyAppScope oldWidget) => data != oldWidget.data;
@@ -766,11 +754,11 @@ class _HomePageState extends State<HomePage> {
                 _buildVerseOfDayCard(),
                 _buildSectionTitle('Media'),
                 _buildButtonGrid(mediaButtons),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
+                const Padding(
+                  padding: EdgeInsets.only(top: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       UpcomingEventCard(),
                     ],
                   ),

@@ -4,14 +4,13 @@ import '../models/note_model.dart';
 import '../services/note_service.dart';
 
 class NoteEditorScreen extends StatefulWidget {
-  final NoteService noteService;
-  final Note? note;
-
   const NoteEditorScreen({
     super.key,
     required this.noteService,
     this.note,
   });
+  final NoteService noteService;
+  final Note? note;
 
   @override
   _NoteEditorScreenState createState() => _NoteEditorScreenState();
@@ -47,7 +46,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Discard changes?'),
-        content: const Text('You have unsaved changes. Do you want to discard them?'),
+        content: const Text(
+            'You have unsaved changes. Do you want to discard them?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -72,12 +72,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       return;
     }
 
-    final note = widget.note ?? Note(
-      id: const Uuid().v4(),
-      title: _titleController.text,
-      content: _contentController.text,
-      lastModified: DateTime.now(),
-    );
+    final note = widget.note ??
+        Note(
+          id: const Uuid().v4(),
+          title: _titleController.text,
+          content: _contentController.text,
+          lastModified: DateTime.now(),
+        );
 
     if (widget.note != null) {
       note.title = _titleController.text;

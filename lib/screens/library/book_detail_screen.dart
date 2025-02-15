@@ -5,12 +5,11 @@ import '../../services/book_service.dart';
 import 'pdf_reader_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
-  final Book book;
-
   const BookDetailScreen({
     Key? key,
     required this.book,
   }) : super(key: key);
+  final Book book;
 
   @override
   State<BookDetailScreen> createState() => _BookDetailScreenState();
@@ -30,19 +29,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Future<void> _loadBookStatus() async {
     final bookmarkedBooks = await _bookService.getBookmarkedBooks();
     final downloadedBooks = await _bookService.getDownloadedBooks();
-    
+
     setState(() {
       _isBookmarked = bookmarkedBooks.contains(widget.book.id);
       _isDownloaded = downloadedBooks.contains(widget.book.id);
     });
   }
 
-  void _toggleBookmark() async {
+  Future<void> _toggleBookmark() async {
     await _bookService.toggleBookmark(widget.book.id);
     setState(() => _isBookmarked = !_isBookmarked);
   }
 
-  void _downloadBook() async {
+  Future<void> _downloadBook() async {
     // Show download progress indicator
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Downloading book...')),
@@ -51,9 +50,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     // TODO: Implement actual download logic here
     await Future.delayed(const Duration(seconds: 2)); // Simulated download
     await _bookService.markAsDownloaded(widget.book.id);
-    
+
     setState(() => _isDownloaded = true);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Book downloaded successfully')),
@@ -128,15 +127,21 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     children: [
                       IconButton(
                         icon: Icon(
-                          _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                          color: _isBookmarked ? Theme.of(context).primaryColor : null,
+                          _isBookmarked
+                              ? Icons.bookmark
+                              : Icons.bookmark_border,
+                          color: _isBookmarked
+                              ? Theme.of(context).primaryColor
+                              : null,
                         ),
                         onPressed: _toggleBookmark,
                       ),
                       IconButton(
                         icon: Icon(
                           _isDownloaded ? Icons.download_done : Icons.download,
-                          color: _isDownloaded ? Theme.of(context).primaryColor : null,
+                          color: _isDownloaded
+                              ? Theme.of(context).primaryColor
+                              : null,
                         ),
                         onPressed: _isDownloaded ? null : _downloadBook,
                       ),

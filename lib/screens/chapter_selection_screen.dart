@@ -4,14 +4,13 @@ import '../services/bible_service.dart';
 import 'bible_screen.dart';
 
 class ChapterSelectionScreen extends StatelessWidget {
-  final Book book;
-  final BibleService? bibleService;
-
   const ChapterSelectionScreen({
     super.key,
     required this.book,
     this.bibleService,
   });
+  final Book book;
+  final BibleService? bibleService;
 
   @override
   Widget build(BuildContext context) {

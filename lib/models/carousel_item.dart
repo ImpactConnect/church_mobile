@@ -16,18 +16,6 @@ enum CarouselItemType {
 }
 
 class CarouselItem {
-  final String id;
-  final String title;
-  final String? description;
-  final String? imageUrl;
-  final String? linkUrl;
-  final CarouselLinkType? linkType;
-  final CarouselItemType itemType;
-  final DateTime createdAt;
-  final bool isActive;
-  final int order;
-  final String? itemId;
-
   CarouselItem({
     required this.id,
     required this.title,
@@ -56,7 +44,7 @@ class CarouselItem {
     // Determine itemType based on linkUrl
     CarouselItemType determinedItemType = CarouselItemType.other;
     if (data['linkUrl'] != null) {
-      String linkUrl = data['linkUrl'].toString();
+      final String linkUrl = data['linkUrl'].toString();
       if (linkUrl.startsWith('/sermons')) {
         determinedItemType = CarouselItemType.sermon;
       } else if (linkUrl.startsWith('/blog')) {
@@ -80,6 +68,17 @@ class CarouselItem {
       itemId: data['itemId'],
     );
   }
+  final String id;
+  final String title;
+  final String? description;
+  final String? imageUrl;
+  final String? linkUrl;
+  final CarouselLinkType? linkType;
+  final CarouselItemType itemType;
+  final DateTime createdAt;
+  final bool isActive;
+  final int order;
+  final String? itemId;
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -113,7 +112,7 @@ class CarouselItem {
     } else {
       // Handle in-app navigation
       String route = linkUrl!;
-      
+
       // If there's an itemId, append it to the route for specific item navigation
       if (itemId != null && itemId!.isNotEmpty) {
         switch (itemType) {
@@ -131,7 +130,7 @@ class CarouselItem {
             break;
         }
       }
-      
+
       Navigator.pushNamed(context, route);
     }
   }

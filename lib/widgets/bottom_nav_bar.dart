@@ -4,12 +4,11 @@ import '../screens/settings_screen.dart';
 import '../main.dart';
 
 class BottomNavBar extends StatelessWidget {
-  final int currentIndex;
-
   const BottomNavBar({
     Key? key,
     required this.currentIndex,
   }) : super(key: key);
+  final int currentIndex;
 
   void _onItemTapped(BuildContext context, int index) {
     if (index == currentIndex) return;
@@ -41,7 +40,7 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      type: BottomNavigationBarType.fixed,
+      onTap: (index) => _onItemTapped(context, index),
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -52,30 +51,10 @@ class BottomNavBar extends StatelessWidget {
           label: 'Notifications',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.people),
-          label: 'Community',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
+          icon: Icon(Icons.settings),
+          label: 'Settings',
         ),
       ],
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            Navigator.pushReplacementNamed(context, '/home');
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/notifications');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/community');
-            break;
-          case 3:
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.grey,
     );

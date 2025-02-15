@@ -6,16 +6,15 @@ import '../widgets/sermon_card.dart';
 import '../widgets/mini_player.dart';
 
 class SermonScreen extends StatefulWidget {
-  final SermonService sermonService;
-  final AudioPlayerService audioPlayerService;
-  final String? initialSermonId;
-
   const SermonScreen({
     Key? key,
     required this.sermonService,
     required this.audioPlayerService,
     this.initialSermonId,
   }) : super(key: key);
+  final SermonService sermonService;
+  final AudioPlayerService audioPlayerService;
+  final String? initialSermonId;
 
   @override
   State<SermonScreen> createState() => _SermonScreenState();
@@ -120,7 +119,8 @@ class _SermonScreenState extends State<SermonScreen>
 
   Future<void> _playInitialSermon() async {
     try {
-      final sermon = await widget.sermonService.getSermonById(widget.initialSermonId!);
+      final sermon =
+          await widget.sermonService.getSermonById(widget.initialSermonId!);
       if (sermon != null && mounted) {
         widget.audioPlayerService.playSermon(sermon);
       }
@@ -421,7 +421,9 @@ class _SermonScreenState extends State<SermonScreen>
           // Apply search and other filters
           final filteredSermons = sermons.where((sermon) {
             final matchesSearch = _searchQuery.isEmpty ||
-                sermon.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                sermon.title
+                    .toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ||
                 sermon.preacherName
                     .toLowerCase()
                     .contains(_searchQuery.toLowerCase());
@@ -429,8 +431,8 @@ class _SermonScreenState extends State<SermonScreen>
             final matchesPreacher = _selectedPreacher == null ||
                 sermon.preacherName == _selectedPreacher;
 
-            final matchesCategory =
-                _selectedCategory == null || sermon.category == _selectedCategory;
+            final matchesCategory = _selectedCategory == null ||
+                sermon.category == _selectedCategory;
 
             final matchesTag =
                 _selectedTag == null || sermon.tags.contains(_selectedTag);

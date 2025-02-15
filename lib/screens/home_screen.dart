@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
 import '../widgets/home_carousel.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,37 +28,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (snapshot.exists) {
         setState(() {
-          _carouselCollections = List<String>.from(snapshot.data()?['paths'] ?? []);
+          _carouselCollections =
+              List<String>.from(snapshot.data()?['paths'] ?? []);
         });
       }
     } catch (e) {
       debugPrint('Error loading carousel collections: $e');
     }
-  }
-
-  List<Map<String, dynamic>> _getQuickActionButtons() {
-    return [
-      {
-        'icon': Icons.menu_book,
-        'label': 'Bible',
-        'onTap': () => Navigator.pushNamed(context, '/bible'),
-      },
-      {
-        'icon': Icons.headphones,
-        'label': 'Sermons',
-        'onTap': () => Navigator.pushNamed(context, '/sermons'),
-      },
-      {
-        'icon': Icons.people,
-        'label': 'Community',
-        'onTap': () => Navigator.pushNamed(context, '/community'),
-      },
-      {
-        'icon': Icons.event,
-        'label': 'Events',
-        'onTap': () => Navigator.pushNamed(context, '/events'),
-      },
-    ];
   }
 
   @override

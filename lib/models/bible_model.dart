@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 
 class Book {
-  final String name;
-  final List<Chapter> chapters;
-
   Book({
     required this.name,
     required this.chapters,
   });
-
-  int get totalChapters => chapters.length;
 
   factory Book.fromJson(Map<String, dynamic> json) {
     return Book(
@@ -17,15 +12,20 @@ class Book {
       chapters: (json['chapters'] as List)
           .asMap()
           .entries
-          .map((entry) => Chapter.fromJson(entry.value as List<dynamic>, entry.key + 1))
+          .map((entry) =>
+              Chapter.fromJson(entry.value as List<dynamic>, entry.key + 1))
           .toList(),
     );
   }
+  final String name;
+  final List<Chapter> chapters;
+
+  int get totalChapters => chapters.length;
 
   static Book fromVerses(List<BibleVerse> verses) {
     final bookName = verses.first.book;
     final chapterMap = <int, List<BibleVerse>>{};
-    
+
     // Group verses by chapter
     for (var verse in verses) {
       final chapterNum = int.parse(verse.chapter);
@@ -54,9 +54,6 @@ class Book {
 }
 
 class Chapter {
-  final int number;
-  final List<Verse> verses;
-
   Chapter({
     required this.number,
     required this.verses,
@@ -72,6 +69,8 @@ class Chapter {
           .toList(),
     );
   }
+  final int number;
+  final List<Verse> verses;
 
   static Chapter fromVerses(List<BibleVerse> verses) {
     final chapterNum = int.parse(verses.first.chapter);
@@ -102,14 +101,6 @@ class Chapter {
 }
 
 class Verse {
-  final int number;
-  final String text;
-  bool isBookmarked;
-  DateTime? bookmarkedDate;
-  bool isHighlighted;
-  Color? highlightColor;
-  String? note;
-
   Verse({
     required this.number,
     required this.text,
@@ -126,13 +117,21 @@ class Verse {
       text: verseText,
     );
   }
+  final int number;
+  final String text;
+  bool isBookmarked;
+  DateTime? bookmarkedDate;
+  bool isHighlighted;
+  Color? highlightColor;
+  String? note;
 
   Map<String, dynamic> toJson() {
     return {
       'number': number,
       'text': text,
       if (isBookmarked) 'bookmarkedDate': bookmarkedDate?.toIso8601String(),
-      if (isHighlighted && highlightColor != null) 'highlightColor': highlightColor?.value,
+      if (isHighlighted && highlightColor != null)
+        'highlightColor': highlightColor?.value,
       if (note != null) 'note': note,
     };
   }
@@ -165,11 +164,6 @@ class Verse {
 }
 
 class BibleVerse {
-  final String book;
-  final String chapter;
-  final String verse;
-  final String text;
-
   BibleVerse({
     required this.book,
     required this.chapter,
@@ -185,4 +179,8 @@ class BibleVerse {
       text: json['text'] as String,
     );
   }
+  final String book;
+  final String chapter;
+  final String verse;
+  final String text;
 }

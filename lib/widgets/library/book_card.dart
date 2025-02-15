@@ -3,12 +3,11 @@ import '../../models/book.dart';
 import '../../screens/library/book_detail_screen.dart';
 
 class BookCard extends StatelessWidget {
-  final Book book;
-
   const BookCard({
     Key? key,
     required this.book,
   }) : super(key: key);
+  final Book book;
 
   @override
   Widget build(BuildContext context) {

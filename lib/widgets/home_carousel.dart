@@ -4,12 +4,11 @@ import '../models/carousel_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeCarousel extends StatefulWidget {
-  final String collectionPath;
-
   const HomeCarousel({
     Key? key,
     required this.collectionPath,
   }) : super(key: key);
+  final String collectionPath;
 
   @override
   State<HomeCarousel> createState() => _HomeCarouselState();

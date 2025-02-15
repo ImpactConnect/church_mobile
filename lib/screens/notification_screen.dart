@@ -49,11 +49,6 @@ class NotificationScreen extends StatelessWidget {
 }
 
 class NotificationItem extends StatelessWidget {
-  final String title;
-  final String message;
-  final String time;
-  final bool isRead;
-
   const NotificationItem({
     Key? key,
     required this.title,
@@ -61,6 +56,10 @@ class NotificationItem extends StatelessWidget {
     required this.time,
     required this.isRead,
   }) : super(key: key);
+  final String title;
+  final String message;
+  final String time;
+  final bool isRead;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +67,8 @@ class NotificationItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isRead ? Colors.grey : Theme.of(context).primaryColor,
+          backgroundColor:
+              isRead ? Colors.grey : Theme.of(context).primaryColor,
           child: const Icon(
             Icons.notifications,
             color: Colors.white,

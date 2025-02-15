@@ -4,12 +4,11 @@ import '../models/devotional.dart';
 import '../services/devotional_service.dart';
 
 class DevotionalDetailScreen extends StatefulWidget {
-  final Devotional devotional;
-
   const DevotionalDetailScreen({
     Key? key,
     required this.devotional,
   }) : super(key: key);
+  final Devotional devotional;
 
   @override
   State<DevotionalDetailScreen> createState() => _DevotionalDetailScreenState();
@@ -64,7 +63,9 @@ Date: ${widget.devotional.date.toString().split(' ')[0]}
         actions: [
           IconButton(
             icon: Icon(
-              _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              _isBookmarked
+                  ? Icons.bookmark_rounded
+                  : Icons.bookmark_border_rounded,
               color: _isBookmarked ? Theme.of(context).primaryColor : null,
             ),
             onPressed: _toggleBookmark,

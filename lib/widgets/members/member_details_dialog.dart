@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:church_mobile/models/member.dart';
 
 class MemberDetailsDialog extends StatelessWidget {
-  final Member member;
-
   const MemberDetailsDialog({Key? key, required this.member}) : super(key: key);
+  final Member member;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +16,8 @@ class MemberDetailsDialog extends StatelessWidget {
             Container(
               height: 200,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16)),
                 image: member.imageUrl != null
                     ? DecorationImage(
                         image: NetworkImage(member.imageUrl!),
@@ -41,7 +41,8 @@ class MemberDetailsDialog extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 8),
-                  _buildInfoRow(Icons.work, member.occupation ?? 'Not specified'),
+                  _buildInfoRow(
+                      Icons.work, member.occupation ?? 'Not specified'),
                   _buildInfoRow(Icons.favorite,
                       member.maritalStatus?.toString() ?? 'Not specified'),
                   if (member.spouseName != null)
@@ -54,12 +55,11 @@ class MemberDetailsDialog extends StatelessWidget {
                   if (member.weddingDate != null)
                     _buildInfoRow(Icons.celebration,
                         'Anniversary: ${_formatDate(member.weddingDate!)}'),
-                  _buildInfoRow(Icons.phone,
-                      member.phoneNumber ?? 'No phone number'),
-                  _buildInfoRow(Icons.email,
-                      member.email ?? 'No email'),
-                  _buildInfoRow(Icons.location_on,
-                      member.address ?? 'No address'),
+                  _buildInfoRow(
+                      Icons.phone, member.phoneNumber ?? 'No phone number'),
+                  _buildInfoRow(Icons.email, member.email ?? 'No email'),
+                  _buildInfoRow(
+                      Icons.location_on, member.address ?? 'No address'),
                 ],
               ),
             ),

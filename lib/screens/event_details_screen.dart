@@ -3,19 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class EventDetailsScreen extends StatelessWidget {
-  final String eventId;
-  final String title;
-
   const EventDetailsScreen({
     Key? key,
     required this.eventId,
     required this.title,
   }) : super(key: key);
+  final String eventId;
+  final String title;
 
   Future<DocumentSnapshot> _loadEventDetails() async {
     debugPrint('Loading event details for ID: $eventId');
     try {
-      final docRef = FirebaseFirestore.instance.collection('events').doc(eventId);
+      final docRef =
+          FirebaseFirestore.instance.collection('events').doc(eventId);
       debugPrint('Firestore reference: ${docRef.path}');
       final doc = await docRef.get();
       debugPrint('Document exists: ${doc.exists}');
@@ -104,7 +104,8 @@ class EventDetailsScreen extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.church, size: 64, color: Colors.grey[400]),
+                              Icon(Icons.church,
+                                  size: 64, color: Colors.grey[400]),
                               const SizedBox(height: 8),
                               Text(
                                 eventData['title'] ?? 'Church Event',
@@ -121,13 +122,11 @@ class EventDetailsScreen extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 20),
-                
                 Text(
                   eventData['title'] ?? 'Untitled Event',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                
                 if (eventData['startDate'] != null) ...[
                   _buildInfoRow(
                     Icons.calendar_today,
@@ -150,7 +149,6 @@ class EventDetailsScreen extends StatelessWidget {
                     eventData['venue'],
                   ),
                 ],
-                
                 if (eventData['description'] != null) ...[
                   const SizedBox(height: 24),
                   Text(
@@ -161,11 +159,10 @@ class EventDetailsScreen extends StatelessWidget {
                   Text(
                     eventData['description'],
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      height: 1.5,
-                    ),
+                          height: 1.5,
+                        ),
                   ),
                 ],
-                
                 const SizedBox(height: 32),
               ],
             ),

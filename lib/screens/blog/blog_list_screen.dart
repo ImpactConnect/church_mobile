@@ -137,13 +137,12 @@ class _BlogListScreenState extends State<BlogListScreen> {
 }
 
 class _BlogPostCard extends StatelessWidget {
-  final BlogPost post;
-  final BlogService _blogService = BlogService();
-
   _BlogPostCard({
     Key? key,
     required this.post,
   }) : super(key: key);
+  final BlogPost post;
+  final BlogService _blogService = BlogService();
 
   @override
   Widget build(BuildContext context) {

@@ -1,16 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BlogPost {
-  final String id;
-  final String title;
-  final String content;
-  final String thumbnailUrl;
-  final String imageUrl;
-  final String author;
-  final DateTime datePosted;
-  final int likes;
-  final List<String> tags;
-
   BlogPost({
     required this.id,
     required this.title,
@@ -37,6 +27,15 @@ class BlogPost {
       tags: List<String>.from(data['tags'] ?? []),
     );
   }
+  final String id;
+  final String title;
+  final String content;
+  final String thumbnailUrl;
+  final String imageUrl;
+  final String author;
+  final DateTime datePosted;
+  final int likes;
+  final List<String> tags;
 
   Map<String, dynamic> toMap() {
     return {

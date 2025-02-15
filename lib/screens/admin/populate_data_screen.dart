@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
 import '../../utils/mock_data.dart';
 import '../../utils/toast_utils.dart';
 
@@ -16,14 +17,15 @@ class _PopulateDataScreenState extends State<PopulateDataScreen> {
   Future<void> _populateMockLiveStreams() async {
     try {
       final collection = _firestore.collection('live_streams');
-      
+
       // Current live stream
       await collection.add({
         'title': 'Sunday Morning Service',
         'url': 'https://www.youtube.com/embed/live_stream?channel=CHANNEL_ID',
         'platform': 'youtube',
         'isLive': true,
-        'startTime': Timestamp.fromDate(DateTime.now().subtract(const Duration(minutes: 30))),
+        'startTime': Timestamp.fromDate(
+            DateTime.now().subtract(const Duration(minutes: 30))),
         'endTime': null,
       });
 
@@ -114,7 +116,8 @@ class _PopulateDataScreenState extends State<PopulateDataScreen> {
               try {
                 await MockData.populateFirestore();
                 if (!mounted) return;
-                ToastUtils.showSuccessToast('Mock data populated successfully!');
+                ToastUtils.showSuccessToast(
+                    'Mock data populated successfully!');
               } catch (e) {
                 if (!mounted) return;
                 ToastUtils.showErrorToast('Error populating data: $e');

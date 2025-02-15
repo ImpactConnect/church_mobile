@@ -6,11 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:just_audio/just_audio.dart';
 
 class SermonCard extends StatelessWidget {
-  final Sermon sermon;
-  final AudioPlayerService audioPlayerService;
-  final SermonService sermonService;
-  final VoidCallback onTap;
-
   const SermonCard({
     Key? key,
     required this.sermon,
@@ -18,6 +13,10 @@ class SermonCard extends StatelessWidget {
     required this.sermonService,
     required this.onTap,
   }) : super(key: key);
+  final Sermon sermon;
+  final AudioPlayerService audioPlayerService;
+  final SermonService sermonService;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

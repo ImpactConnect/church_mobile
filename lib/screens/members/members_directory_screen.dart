@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:church_mobile/models/member.dart';
 import 'package:church_mobile/widgets/members/member_details_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class MembersDirectoryScreen extends StatelessWidget {
   const MembersDirectoryScreen({Key? key}) : super(key: key);

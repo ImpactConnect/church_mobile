@@ -266,9 +266,8 @@ class _LibraryScreenState extends State<LibraryScreen>
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
   _SliverAppBarDelegate(this.child);
+  final Widget child;
 
   @override
   double get minExtent => 130;

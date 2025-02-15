@@ -2,15 +2,6 @@ import 'package:flutter/material.dart';
 import '../../services/book_service.dart';
 
 class FilterSection extends StatelessWidget {
-  final Function(String?) onCategorySelected;
-  final Function(String?) onAuthorSelected;
-  final Function(List<String>?) onTopicsSelected;
-  final VoidCallback onClearFilters;
-  final bool hasActiveFilters;
-  final String? selectedCategory;
-  final String? selectedAuthor;
-  final List<String>? selectedTopics;
-
   const FilterSection({
     Key? key,
     required this.onCategorySelected,
@@ -22,6 +13,14 @@ class FilterSection extends StatelessWidget {
     this.selectedAuthor,
     this.selectedTopics,
   }) : super(key: key);
+  final Function(String?) onCategorySelected;
+  final Function(String?) onAuthorSelected;
+  final Function(List<String>?) onTopicsSelected;
+  final VoidCallback onClearFilters;
+  final bool hasActiveFilters;
+  final String? selectedCategory;
+  final String? selectedAuthor;
+  final List<String>? selectedTopics;
 
   void _showCategoryDialog(BuildContext context) {
     showDialog(

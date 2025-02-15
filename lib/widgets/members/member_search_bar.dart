@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 class MemberSearchBar extends StatelessWidget {
-  final Function(String) onSearch;
-
   const MemberSearchBar({
     Key? key,
     required this.onSearch,
   }) : super(key: key);
+  final Function(String) onSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +25,11 @@ class MemberSearchBar extends StatelessWidget {
       ),
       child: TextField(
         onChanged: onSearch,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: 'Search members...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: Icon(Icons.search),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
+          contentPadding: EdgeInsets.symmetric(
             horizontal: 16.0,
             vertical: 12.0,
           ),

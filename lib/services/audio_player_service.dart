@@ -3,15 +3,15 @@ import 'package:just_audio_background/just_audio_background.dart';
 import '../models/sermon.dart';
 
 class AudioPlayerService {
-  static final AudioPlayerService _instance = AudioPlayerService._internal();
   factory AudioPlayerService() => _instance;
+
+  AudioPlayerService._internal();
+  static final AudioPlayerService _instance = AudioPlayerService._internal();
 
   AudioPlayer? _player;
   List<Sermon> _playlist = [];
   int _currentIndex = -1;
   Sermon? _currentSermon;
-
-  AudioPlayerService._internal();
 
   AudioPlayer get player {
     _player ??= AudioPlayer();

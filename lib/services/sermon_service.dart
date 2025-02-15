@@ -14,7 +14,7 @@ class SermonService {
   Future<void> _saveToPrefs(Sermon sermon) async {
     final prefs = await SharedPreferences.getInstance();
     final sermons = await _loadFromPrefs();
-    
+
     // Update or add the sermon
     final index = sermons.indexWhere((s) => s.id == sermon.id);
     if (index != -1) {
@@ -22,16 +22,17 @@ class SermonService {
     } else {
       sermons.add(sermon);
     }
-    
+
     // Save the updated list
-    final serializedSermons = sermons.map((s) => jsonEncode(s.toJson())).toList();
+    final serializedSermons =
+        sermons.map((s) => jsonEncode(s.toJson())).toList();
     await prefs.setStringList(_prefsKey, serializedSermons);
   }
 
   Future<List<Sermon>> _loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final serializedSermons = prefs.getStringList(_prefsKey) ?? [];
-    
+
     return serializedSermons
         .map((s) => Sermon.fromJson(jsonDecode(s)))
         .toList();
@@ -44,25 +45,28 @@ class SermonService {
     String? searchQuery,
   }) async {
     try {
-      Query query = _firestore.collection('sermons');
+      final Query query = _firestore.collection('sermons');
 
       // Get all sermons and filter in memory to avoid index requirements
       final QuerySnapshot snapshot = await query.get();
-      List<Sermon> sermons = snapshot.docs.map((doc) => Sermon.fromFirestore(doc)).toList();
+      List<Sermon> sermons =
+          snapshot.docs.map((doc) => Sermon.fromFirestore(doc)).toList();
 
       // Apply filters in memory
       if (category != null) {
-        sermons = sermons.where((sermon) => sermon.category == category).toList();
+        sermons =
+            sermons.where((sermon) => sermon.category == category).toList();
       }
 
       if (preacher != null) {
-        sermons = sermons.where((sermon) => sermon.preacherName == preacher).toList();
+        sermons =
+            sermons.where((sermon) => sermon.preacherName == preacher).toList();
       }
 
       if (tags != null && tags.isNotEmpty) {
-        sermons = sermons.where((sermon) => 
-          sermon.tags.any((tag) => tags.contains(tag))
-        ).toList();
+        sermons = sermons
+            .where((sermon) => sermon.tags.any((tag) => tags.contains(tag)))
+            .toList();
       }
 
       // Apply search filter if provided
@@ -104,7 +108,7 @@ class SermonService {
     } catch (e) {
       print('Error fetching sermons: $e');
       ToastUtils.showErrorToast('Error loading sermons');
-      
+
       // On error, try to return cached data
       final cachedSermons = await _loadFromPrefs();
       if (cachedSermons.isNotEmpty) {
@@ -133,7 +137,7 @@ class SermonService {
   Future<void> downloadSermon(Sermon sermon) async {
     try {
       ToastUtils.showToast('Download started for "${sermon.title}"');
-      
+
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = '${sermon.id}.mp3';
       final file = File('${appDir.path}/$fileName');
@@ -146,7 +150,7 @@ class SermonService {
       sermon.isDownloaded = true;
       sermon.localAudioPath = file.path;
       await _saveToPrefs(sermon);
-      
+
       ToastUtils.showSuccessToast('Download completed for "${sermon.title}"');
     } catch (e) {
       print('Error downloading sermon: $e');
@@ -167,7 +171,7 @@ class SermonService {
       sermon.isDownloaded = false;
       sermon.localAudioPath = null;
       await _saveToPrefs(sermon);
-      
+
       ToastUtils.showSuccessToast('Deleted "${sermon.title}" from downloads');
     } catch (e) {
       print('Error deleting downloaded sermon: $e');
@@ -180,15 +184,14 @@ class SermonService {
     try {
       sermon.isBookmarked = !sermon.isBookmarked;
       await _saveToPrefs(sermon);
-      
-      ToastUtils.showSuccessToast(
-        sermon.isBookmarked 
+
+      ToastUtils.showSuccessToast(sermon.isBookmarked
           ? '"${sermon.title}" added to bookmarks'
-          : '"${sermon.title}" removed from bookmarks'
-      );
+          : '"${sermon.title}" removed from bookmarks');
     } catch (e) {
       print('Error toggling bookmark: $e');
-      ToastUtils.showErrorToast('Failed to ${sermon.isBookmarked ? 'bookmark' : 'unbookmark'} "${sermon.title}"');
+      ToastUtils.showErrorToast(
+          'Failed to ${sermon.isBookmarked ? 'bookmark' : 'unbookmark'} "${sermon.title}"');
       rethrow;
     }
   }

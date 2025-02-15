@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageProvider with ChangeNotifier {
+  LanguageProvider(this._prefs) {
+    _loadLanguage();
+  }
   static const String _languageKey = 'selected_language';
   final SharedPreferences _prefs;
   late Locale _currentLocale;
@@ -13,10 +16,6 @@ class LanguageProvider with ChangeNotifier {
     'German': Locale('de'),
     'Chinese': Locale('zh'),
   };
-
-  LanguageProvider(this._prefs) {
-    _loadLanguage();
-  }
 
   Locale get currentLocale => _currentLocale;
   String get currentLanguage => _getLanguageName(_currentLocale);

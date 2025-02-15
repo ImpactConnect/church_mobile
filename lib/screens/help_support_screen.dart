@@ -66,11 +66,13 @@ class HelpSupportScreen extends StatelessWidget {
             [
               FAQItem(
                 question: 'How do I create an account?',
-                answer: 'Tap the profile icon and follow the registration process. You\'ll need to provide your email and create a password.',
+                answer:
+                    'Tap the profile icon and follow the registration process. You\'ll need to provide your email and create a password.',
               ),
               FAQItem(
                 question: 'How do I reset my password?',
-                answer: 'Go to the login screen and tap "Forgot Password". Follow the instructions sent to your email.',
+                answer:
+                    'Go to the login screen and tap "Forgot Password". Follow the instructions sent to your email.',
               ),
             ],
           ),
@@ -79,11 +81,13 @@ class HelpSupportScreen extends StatelessWidget {
             [
               FAQItem(
                 question: 'How do I highlight verses?',
-                answer: 'Long press any verse to open the highlight menu. Choose your preferred color.',
+                answer:
+                    'Long press any verse to open the highlight menu. Choose your preferred color.',
               ),
               FAQItem(
                 question: 'Can I add personal notes?',
-                answer: 'Yes! Tap the note icon next to any verse to add your thoughts.',
+                answer:
+                    'Yes! Tap the note icon next to any verse to add your thoughts.',
               ),
             ],
           ),
@@ -92,12 +96,14 @@ class HelpSupportScreen extends StatelessWidget {
             [
               FAQItem(
                 question: 'How do I download sermons?',
-                answer: 'Tap the download icon next to any sermon to save it for offline listening.',
+                answer:
+                    'Tap the download icon next to any sermon to save it for offline listening.',
                 link: 'https://yourchurch.com/help/downloads',
               ),
               FAQItem(
                 question: 'Can I share content with others?',
-                answer: 'Yes! Use the share button to send content via your preferred platform.',
+                answer:
+                    'Yes! Use the share button to send content via your preferred platform.',
               ),
             ],
           ),
@@ -129,15 +135,14 @@ class HelpSupportScreen extends StatelessWidget {
 }
 
 class _SupportCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
   const _SupportCard({
     required this.icon,
     required this.title,
     required this.onTap,
   });
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -164,23 +169,17 @@ class _SupportCard extends StatelessWidget {
 }
 
 class FAQItem {
-  final String question;
-  final String answer;
-  final String? link;
-
   FAQItem({
     required this.question,
     required this.answer,
     this.link,
   });
-}
-
-class FAQTile extends StatelessWidget {
   final String question;
   final String answer;
   final String? link;
-  final VoidCallback? onTapLink;
+}
 
+class FAQTile extends StatelessWidget {
   const FAQTile({
     Key? key,
     required this.question,
@@ -188,6 +187,10 @@ class FAQTile extends StatelessWidget {
     this.link,
     this.onTapLink,
   }) : super(key: key);
+  final String question;
+  final String answer;
+  final String? link;
+  final VoidCallback? onTapLink;
 
   @override
   Widget build(BuildContext context) {

@@ -1,16 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
-    function isMember() {
-      return request.auth != null && exists(/databases/$(database)/documents/members/$(request.auth.uid));
-    }
-    
-    function isVerifiedPhoneNumber(number) {
-      let query = get(/databases/$(database)/documents/members);
-      return query.data.phoneNumber == number;
-    }
-
     // Allow read access to all documents for all users
     match /{document=**} {
       allow read: if true;
@@ -47,8 +37,7 @@ service cloud.firestore {
 
     // Members collection
     match /members/{memberId} {
-      allow read: if true;  // Public read for phone verification
-      allow write: if false;  // Only admin can modify members
+      allow read, write: if true;
     }
 
     // Announcements collection
@@ -100,43 +89,38 @@ service cloud.firestore {
       allow write: if true; // TODO: Add admin authentication check
     }
 
-    // Phone verification collection
-    match /phone_verifications/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null && request.auth.uid == userId
-        && request.resource.data.keys().hasAll(['phoneNumber', 'verified'])
-        && request.resource.data.verified is bool;
+    // Community collections
+    // Community Users Collection Rules
+    match /community_users/{userId} {
+      // Allow read access to authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow create only for new users
+      allow create: if !exists(/databases/$(database)/documents/community_users/$(userId));
+      
+      // Allow update only to the user's own document
+      allow update: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Community posts
     match /community_posts/{postId} {
-      allow read: if true;  // Anyone can read posts
-      allow create: if isMember();  // Only members can create posts
-      allow update: if isMember() 
-        && (request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['likesCount', 'commentsCount']));  // Only allow updating counts
-      allow delete: if isMember() 
-        && resource.data.authorId == request.auth.uid;  // Only author can delete
-      
-      // Likes subcollection
-      match /likes/{likeId} {
-        allow read: if true;
-        allow write: if isMember() 
-          && likeId == request.auth.uid;  // User can only manage their own like
-      }
-      
-      // Comments subcollection
-      match /comments/{commentId} {
-        allow read: if true;
-        allow create: if isMember();
-        allow update, delete: if isMember() 
-          && resource.data.authorId == request.auth.uid;  // Only author can modify
-      }
+      allow read, write: if true;
     }
 
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
+    match /community_comments/{commentId} {
+      allow read, write: if true;
+    }
+
+    // Community Posts Collection Rules
+    match /community_posts/{postId} {
+      // Allow reading posts to all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow creating posts to authenticated users
+      allow create: if request.auth != null;
+      
+      // Allow updating/deleting only by the post author
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.author_id;
     }
   }
 }

@@ -7,7 +7,7 @@ class StorageManager {
   static Future<Map<String, int>> getStorageInfo() async {
     final appDir = await getApplicationDocumentsDirectory();
     final cacheDir = await getTemporaryDirectory();
-    
+
     return {
       'appSize': await _calculateDirSize(appDir),
       'cacheSize': await _calculateDirSize(cacheDir),
@@ -32,7 +32,7 @@ class StorageManager {
   static String formatSize(int bytes) {
     if (bytes <= 0) return '0 B';
     const suffixes = ['B', 'KB', 'MB', 'GB'];
-    var i = (log(bytes) / log(1024)).floor();
+    final i = (log(bytes) / log(1024)).floor();
     return '${(bytes / pow(1024, i)).toStringAsFixed(1)} ${suffixes[i]}';
   }
 

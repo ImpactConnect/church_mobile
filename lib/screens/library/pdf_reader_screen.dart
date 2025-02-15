@@ -4,12 +4,11 @@ import '../../models/book.dart';
 import '../../services/book_service.dart';
 
 class PdfReaderScreen extends StatefulWidget {
-  final Book book;
-
   const PdfReaderScreen({
     Key? key,
     required this.book,
   }) : super(key: key);
+  final Book book;
 
   @override
   State<PdfReaderScreen> createState() => _PdfReaderScreenState();

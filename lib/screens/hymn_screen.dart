@@ -5,13 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'hymn_detail_screen.dart';
 
 class Hymn {
-  final int hymnNumber;
-  final String title;
-  final String author;
-  final List<List<String>> lyrics;
-  final List<String>? chorus;
-  bool isBookmarked;
-
   Hymn({
     required this.hymnNumber,
     required this.title,
@@ -37,6 +30,12 @@ class Hymn {
           : null,
     );
   }
+  final int hymnNumber;
+  final String title;
+  final String author;
+  final List<List<String>> lyrics;
+  final List<String>? chorus;
+  bool isBookmarked;
 
   Map<String, dynamic> toJson() => {
         'hymn_number': hymnNumber,
@@ -312,7 +311,7 @@ class _HymnScreenState extends State<HymnScreen>
     );
   }
 
-  void _openHymnDetail(Hymn hymn) async {
+  Future<void> _openHymnDetail(Hymn hymn) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -353,15 +352,14 @@ class _HymnScreenState extends State<HymnScreen>
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
   _SliverAppBarDelegate({
     required this.minHeight,
     required this.maxHeight,
     required this.child,
   });
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
 
   @override
   double get minExtent => minHeight;

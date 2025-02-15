@@ -4,14 +4,13 @@ import '../models/devotional.dart';
 import '../utils/toast_utils.dart';
 
 class DevotionalService {
+  DevotionalService() {
+    _initPrefs();
+  }
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'devotionals';
   final String _bookmarksKey = 'bookmarked_devotionals';
   SharedPreferences? _prefs;
-
-  DevotionalService() {
-    _initPrefs();
-  }
 
   Future<void> _initPrefs() async {
     _prefs ??= await SharedPreferences.getInstance();

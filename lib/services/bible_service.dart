@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/bible_model.dart';
 
 class BibleService {
+  BibleService(this._prefs);
   static const String BOOKMARKS_KEY = 'bible_bookmarks';
   static const String HIGHLIGHTS_KEY = 'bible_highlights';
   static const String NOTES_KEY = 'bible_notes';
@@ -36,8 +37,6 @@ class BibleService {
   List<Book> _bible = [];
   final List<Book> _searchResults = [];
   final SharedPreferences? _prefs;
-
-  BibleService(this._prefs);
 
   Future<void> loadBible() async {
     try {

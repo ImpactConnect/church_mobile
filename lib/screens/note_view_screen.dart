@@ -12,14 +12,13 @@ import '../services/note_service.dart';
 import 'note_editor_screen.dart';
 
 class NoteViewScreen extends StatefulWidget {
-  final Note note;
-  final NoteService noteService;
-
   const NoteViewScreen({
     Key? key,
     required this.note,
     required this.noteService,
   }) : super(key: key);
+  final Note note;
+  final NoteService noteService;
 
   @override
   State<NoteViewScreen> createState() => _NoteViewScreenState();

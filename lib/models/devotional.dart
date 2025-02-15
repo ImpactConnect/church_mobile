@@ -1,14 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Devotional {
-  final String id;
-  final String topic;
-  final DateTime date;
-  final String bibleVerse;
-  final String content;
-  final List<String> prayerPoints;
-  final String author;
-
   Devotional({
     required this.id,
     required this.topic,
@@ -31,6 +23,13 @@ class Devotional {
       author: data['author'] ?? '',
     );
   }
+  final String id;
+  final String topic;
+  final DateTime date;
+  final String bibleVerse;
+  final String content;
+  final List<String> prayerPoints;
+  final String author;
 
   Map<String, dynamic> toFirestore() {
     return {

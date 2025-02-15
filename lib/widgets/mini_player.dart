@@ -4,16 +4,15 @@ import '../models/sermon.dart';
 import '../services/audio_player_service.dart';
 
 class MiniPlayer extends StatefulWidget {
-  final Sermon sermon;
-  final AudioPlayerService audioPlayerService;
-  final VoidCallback onClose;
-
   const MiniPlayer({
     Key? key,
     required this.sermon,
     required this.audioPlayerService,
     required this.onClose,
   }) : super(key: key);
+  final Sermon sermon;
+  final AudioPlayerService audioPlayerService;
+  final VoidCallback onClose;
 
   @override
   State<MiniPlayer> createState() => _MiniPlayerState();

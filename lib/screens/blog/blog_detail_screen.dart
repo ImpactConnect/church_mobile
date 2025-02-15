@@ -5,13 +5,12 @@ import '../../models/blog_post.dart';
 import '../../services/blog_service.dart';
 
 class BlogDetailScreen extends StatelessWidget {
-  final String postId;
-  final BlogService _blogService = BlogService();
-
   BlogDetailScreen({
     Key? key,
     required this.postId,
   }) : super(key: key);
+  final String postId;
+  final BlogService _blogService = BlogService();
 
   void _shareBlogPost(BuildContext context, BlogPost post) {
     final url = 'https://yourchurch.com/blog/${post.id}';
@@ -118,7 +117,8 @@ class BlogDetailScreen extends StatelessWidget {
                         children: post.tags.map((tag) {
                           return Chip(
                             label: Text(tag),
-                            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                            backgroundColor:
+                                Theme.of(context).primaryColor.withOpacity(0.1),
                           );
                         }).toList(),
                       ),

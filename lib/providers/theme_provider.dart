@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
-  static const String _themeKey = 'theme_mode';
-  final SharedPreferences _prefs;
-  late ThemeMode _themeMode;
-
   ThemeProvider(this._prefs) {
     _loadTheme();
   }
+  static const String _themeKey = 'theme_mode';
+  final SharedPreferences _prefs;
+  late ThemeMode _themeMode;
 
   ThemeMode get themeMode => _themeMode;
 
@@ -19,7 +18,8 @@ class ThemeProvider with ChangeNotifier {
   }
 
   Future<void> toggleTheme() async {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     await _prefs.setBool(_themeKey, _themeMode == ThemeMode.dark);
     notifyListeners();
   }
