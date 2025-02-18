@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import '../screens/in_app_browser_screen.dart';
 
 enum CarouselLinkType {

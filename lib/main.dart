@@ -1,35 +1,40 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart'; // Add this import
+
 import 'firebase_options.dart';
-import 'utils/toast_utils.dart';
-import 'utils/data_migration.dart';
+import 'providers/language_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/bible_screen.dart';
-import 'screens/notes_screen.dart';
-import 'screens/sermon_screen.dart';
+import 'screens/blog/blog_detail_screen.dart';
+import 'screens/blog/blog_list_screen.dart';
 import 'screens/devotional_screen.dart';
-import 'screens/live_stream_screen.dart';
+import 'screens/event_details_screen.dart';
 import 'screens/event_screen.dart';
 import 'screens/hymn_screen.dart';
-import 'screens/event_details_screen.dart';
-import 'screens/blog/blog_list_screen.dart';
-import 'screens/blog/blog_detail_screen.dart';
+import 'screens/library/library_screen.dart';
+import 'screens/live_stream_screen.dart';
+import 'screens/media/gallery_screen.dart';
+import 'screens/media/video_screen.dart';
+import 'screens/members/members_connect_screen.dart';
+import 'screens/notes_screen.dart';
+import 'screens/sermon_screen.dart';
+import 'services/audio_player_service.dart';
 import 'services/bible_service.dart';
 import 'services/note_service.dart';
+import 'services/onesignal_service.dart'; // Add this import
 import 'services/sermon_service.dart';
-import 'services/audio_player_service.dart';
-import 'widgets/home_carousel.dart';
+import 'utils/data_migration.dart';
+import 'utils/toast_utils.dart';
 import 'widgets/bottom_nav_bar.dart';
 import 'widgets/home/upcoming_event_card.dart';
-import 'package:provider/provider.dart';
-import 'providers/theme_provider.dart';
-import 'providers/language_provider.dart';
-import 'screens/library/library_screen.dart';
-import 'screens/members/members_connect_screen.dart';
+import 'widgets/home_carousel.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +45,15 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print('Firebase initialized successfully');
+
+    // Initialize OneSignal
+    await OneSignalService.initOneSignal();
+
+    // Check notification permissions
+    final hasPermission = await OneSignalService.checkNotificationPermissions();
+    if (!hasPermission) {
+      print('Notification permissions not granted');
+    }
 
     // Test Firestore connection
     try {
@@ -149,6 +163,8 @@ class MyApp extends StatelessWidget {
               '/blog': (context) => const BlogListScreen(),
               '/library': (context) => const LibraryScreen(),
               '/members': (context) => const MembersConnectScreen(),
+              '/videos': (context) => const VideoScreen(),
+              '/gallery': (context) => const GalleryScreen(),
             },
             onGenerateRoute: (settings) {
               final uri = Uri.parse(settings.name ?? '');
@@ -374,18 +390,18 @@ class _HomePageState extends State<HomePage> {
       'icon': Icons.video_library,
       'label': 'Videos',
       'color': Colors.red,
-      'route': null,
-    },
-    {
-      'icon': Icons.radio,
-      'label': 'Radio',
-      'color': Colors.blue,
-      'route': null,
+      'route': (BuildContext context) => const VideoScreen(),
     },
     {
       'icon': Icons.photo_library,
       'label': 'Gallery',
       'color': Colors.purple,
+      'route': (BuildContext context) => const GalleryScreen(),
+    },
+    {
+      'icon': Icons.radio,
+      'label': 'Radio',
+      'color': Colors.blue,
       'route': null,
     },
   ];

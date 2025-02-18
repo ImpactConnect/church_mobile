@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../models/sermon.dart';
-import '../services/sermon_service.dart';
 import '../services/audio_player_service.dart';
-import '../widgets/sermon_card.dart';
+import '../services/sermon_service.dart';
 import '../widgets/mini_player.dart';
+import '../widgets/sermon_card.dart';
 
 class SermonScreen extends StatefulWidget {
   const SermonScreen({

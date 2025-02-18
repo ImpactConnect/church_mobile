@@ -6,12 +6,20 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="church_mobile"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
+        
+        <!-- OneSignal App ID Metadata -->
+        <meta-data
+            android:name="com.onesignal.appid"
+            android:value="44ffcdfa-336a-4785-acbf-b09a23ad8a91" />
+        
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:exported="true"

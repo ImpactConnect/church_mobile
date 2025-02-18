@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:church_mobile/models/member.dart';
+import 'package:flutter/material.dart';
 
 class MemberDetailsDialog extends StatelessWidget {
   const MemberDetailsDialog({Key? key, required this.member}) : super(key: key);

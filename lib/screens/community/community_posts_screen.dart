@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../models/community_post.dart';
 import '../../models/community_user.dart';
 import '../../services/community_post_service.dart';
+import '../../widgets/bottom_nav_bar.dart'; // Corrected import path
 import 'community_post_details_screen.dart';
 
 class CommunityPostsScreen extends StatefulWidget {
+  const CommunityPostsScreen({Key? key, required this.currentUser})
+      : super(key: key);
   final CommunityUser currentUser;
-
-  const CommunityPostsScreen({Key? key, required this.currentUser}) : super(key: key);
 
   @override
   _CommunityPostsScreenState createState() => _CommunityPostsScreenState();
@@ -28,7 +29,7 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
-        insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         title: Text(
           'Create New Post',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -37,7 +38,8 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
         ),
         content: SingleChildScrollView(
           child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.85, // 85% of screen width
+            width:
+                MediaQuery.of(context).size.width * 0.85, // 85% of screen width
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -48,13 +50,13 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    prefixIcon: Icon(Icons.title),
+                    prefixIcon: const Icon(Icons.title),
                     counterText: '', // Hide character counter
                   ),
                   maxLength: 100,
                   maxLines: 1,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _postController,
                   decoration: InputDecoration(
@@ -62,7 +64,7 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    prefixIcon: Icon(Icons.message),
+                    prefixIcon: const Icon(Icons.message),
                     counterText: '', // Hide character counter
                   ),
                   maxLines: 5,
@@ -80,7 +82,7 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
               _titleController.clear();
               _postController.clear();
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -92,7 +94,7 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: Text('Post'),
+            child: const Text('Post'),
           ),
         ],
       ),
@@ -143,25 +145,25 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
       appBar: AppBar(
         title: const Text('Community Discussions'),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(60),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search topics...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear),
-                      onPressed: () {
-                        setState(() {
-                          _searchController.clear();
-                          _searchQuery = '';
-                        });
-                      },
-                    )
-                  : null,
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -179,7 +181,7 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: _showCreatePostDialog,
           ),
         ],
@@ -204,10 +206,9 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'No posts yet. Be the first to start a discussion!',
-                    style:
-                        Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey,
-                            ),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey,
+                        ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -217,8 +218,10 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
 
           // Filter posts based on search query
           final filteredPosts = snapshot.data!.where((post) {
-            final titleMatches = post.title.toLowerCase().contains(_searchQuery);
-            final contentMatches = post.content.toLowerCase().contains(_searchQuery);
+            final titleMatches =
+                post.title.toLowerCase().contains(_searchQuery);
+            final contentMatches =
+                post.content.toLowerCase().contains(_searchQuery);
             return titleMatches || contentMatches;
           }).toList();
 
@@ -233,8 +236,10 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreatePostDialog,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
+      bottomNavigationBar:
+          const BottomNavBar(currentIndex: 2), // Set to Community index
     );
   }
 
@@ -265,7 +270,7 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Text(
@@ -274,18 +279,18 @@ class _CommunityPostsScreenState extends State<CommunityPostsScreen> {
                         color: Colors.grey[600],
                       ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Text(
                   formattedDate,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey[600],
                       ),
                 ),
-                SizedBox(width: 8),
-                Icon(Icons.favorite, size: 16, color: Colors.red),
+                const SizedBox(width: 8),
+                const Icon(Icons.favorite, size: 16, color: Colors.red),
                 Text(' ${post.likesCount}'),
-                SizedBox(width: 8),
-                Icon(Icons.comment, size: 16),
+                const SizedBox(width: 8),
+                const Icon(Icons.comment, size: 16),
                 Text(' ${post.commentsCount}'),
               ],
             ),

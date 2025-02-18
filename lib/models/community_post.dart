@@ -14,7 +14,7 @@ class CommunityPost {
 
   // Convert Firestore document to CommunityPost object
   factory CommunityPost.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return CommunityPost(
       id: doc.id,
       title: data['title'] ?? '',

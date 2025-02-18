@@ -43,8 +43,8 @@ dependencies:
   
   # Firebase
   firebase_core: ^2.27.0
-  firebase_auth: ^4.17.8
-  cloud_firestore: ^4.15.8
+  firebase_auth: ^4.17.0
+  cloud_firestore: ^4.15.0
   firebase_storage: ^11.6.6
   
   # UI Components
@@ -73,10 +73,16 @@ dependencies:
   table_calendar: ^3.0.9
   device_calendar: ^4.3.2  # Downgrade to a more stable version
   package_info_plus: ^5.0.1
-  url_launcher: ^6.0.0
+  url_launcher: ^6.2.5
   provider: ^6.1.1
   flutter_cache_manager: ^3.3.1
   timeago: ^3.6.0
+  youtube_player_iframe: ^4.0.4
+  
+  # Video Playback Dependencies
+  # url_launcher: ^6.2.5
+  http: ^1.1.0
+  onesignal_flutter: ^3.5.1
 
 dev_dependencies:
   flutter_test:
@@ -116,6 +122,8 @@ flutter:
     - assets/images/events_header.jpg
     - assets/images/hymnal_header.jpg
     - assets/images/blog_header.jpg
+    - assets/images/video_header.jpg
+    - assets/images/gallery_header.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

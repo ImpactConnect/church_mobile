@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:flutter/material.dart';
+
 import '../models/sermon.dart';
 import '../services/audio_player_service.dart';
 

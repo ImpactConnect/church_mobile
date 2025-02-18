@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../services/community_auth_service.dart';
+
 import '../../models/community_user.dart';
+import '../../services/community_auth_service.dart';
 import 'community_dashboard_screen.dart';
 
 class CommunityLoginScreen extends StatefulWidget {

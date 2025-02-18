@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:card_swiper/card_swiper.dart';
-import '../models/carousel_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+import '../models/carousel_item.dart';
 
 class HomeCarousel extends StatefulWidget {
   const HomeCarousel({

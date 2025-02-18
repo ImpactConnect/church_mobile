@@ -30,7 +30,7 @@ class CommunityCommentService {
         authorName: author.displayName,
         content: content,
         createdAt: Timestamp.now(),
-        likesCount: 0,  // Initialize likes count
+        likesCount: 0, // Initialize likes count
         parentCommentId: parentCommentId,
       );
 
@@ -50,9 +50,8 @@ class CommunityCommentService {
         transaction.set(commentRef, newComment.toFirestore());
 
         // Update post's comment count
-        transaction.update(postRef, {
-          'comments_count': currentCommentCount + 1
-        });
+        transaction
+            .update(postRef, {'comments_count': currentCommentCount + 1});
       });
 
       print('Comment Added Successfully: ${newComment.id}');
@@ -74,15 +73,15 @@ class CommunityCommentService {
         .map((snapshot) {
       print('Fetching comments for post: $postId');
       print('Number of comments found: ${snapshot.docs.length}');
-      
+
       final comments = snapshot.docs
           .map((doc) => CommunityComment.fromFirestore(doc))
           .toList();
-      
-      comments.forEach((comment) {
+
+      for (var comment in comments) {
         print('Comment details: ${comment.content}, by ${comment.authorName}');
-      });
-      
+      }
+
       return comments;
     });
   }

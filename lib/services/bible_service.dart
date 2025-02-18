@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/bible_model.dart';
 
 class BibleService {

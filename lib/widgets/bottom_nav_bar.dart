@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../main.dart';
+import '../screens/members/members_connect_screen.dart';
 import '../screens/notification_screen.dart';
 import '../screens/settings_screen.dart';
-import '../main.dart';
 
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar({
@@ -28,6 +30,13 @@ class BottomNavBar extends StatelessWidget {
         );
         break;
       case 2:
+        // Members Connect
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MembersConnectScreen()),
+        );
+        break;
+      case 3:
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SettingsScreen()),
@@ -51,12 +60,15 @@ class BottomNavBar extends StatelessWidget {
           label: 'Notifications',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.people_alt_outlined),
+          label: 'Members',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           label: 'Settings',
         ),
       ],
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed,
     );
   }
 }

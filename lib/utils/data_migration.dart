@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/carousel_item.dart';
 
 class DataMigration {
   static const String _carouselMigrationKey = 'carousel_migration_completed_v1';

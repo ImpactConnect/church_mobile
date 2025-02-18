@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:church_mobile/models/member.dart';
 import 'package:church_mobile/models/announcement.dart';
+import 'package:church_mobile/models/member.dart';
 import 'package:church_mobile/models/testimony.dart';
+import 'package:church_mobile/screens/members/members_directory_screen.dart';
 import 'package:church_mobile/widgets/members/member_details_dialog.dart';
 import 'package:church_mobile/widgets/testimony_details_dialog.dart';
-import 'package:church_mobile/screens/members/members_directory_screen.dart';
-import '../../models/community_user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+import '../../widgets/bottom_nav_bar.dart';
 import '../community/community_login_screen.dart';
 
 class MembersConnectScreen extends StatefulWidget {
@@ -240,16 +241,6 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Members Connect'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.group_add),
-            onPressed: _navigateToCommunityLogin,
-            tooltip: 'Community Access',
-          ),
-        ],
-      ),
       body: RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _handleRefresh,
@@ -402,7 +393,7 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Today\'s Celebrations',
+                        'Today\'s Celebrants',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -569,7 +560,7 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
                           children: [
                             _buildActionButton(
                               icon: Icons.group,
-                              label: 'Community',
+                              label: 'Community Forum',
                               color: Colors.blue,
                               onTap: () => Navigator.push(
                                 context,
@@ -614,6 +605,8 @@ class _MembersConnectScreenState extends State<MembersConnectScreen>
           ],
         ),
       ),
+      bottomNavigationBar:
+          const BottomNavBar(currentIndex: 2), // Set to Members index
     );
   }
 }

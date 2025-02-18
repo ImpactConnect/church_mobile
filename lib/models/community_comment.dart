@@ -16,7 +16,7 @@ class CommunityComment {
 
   // Convert Firestore document to CommunityComment object
   factory CommunityComment.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return CommunityComment(
       id: doc.id,
       postId: data['post_id'] ?? '',

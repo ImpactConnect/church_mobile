@@ -122,5 +122,41 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && 
         request.auth.uid == resource.data.author_id;
     }
+    
+    match /videos/{videoId} {
+      allow read, write: if true;
+    }
+
+    // Gallery Collection Rules
+    match /gallery/{galleryId} {
+      allow read, write: if true;
+    }
+
+    // Gallery Collection Rules
+    // match /gallery/{galleryId} {
+    //   // Allow read access to authenticated users
+    //   allow read: if request.auth != null;
+      
+    //   // Strict write rules for admin users
+    //   allow create, update, delete: if request.auth != null 
+    //     && request.auth.token.role == 'admin';
+      
+    //   // Validate gallery document structure
+    //   function isValidGalleryDocument(data) {
+    //     return data.keys().hasAll(['imageUrl', 'title', 'description', 'uploadedAt']) 
+    //       && data.imageUrl is string 
+    //       && data.title is string 
+    //       && data.description is string 
+    //       && data.uploadedAt is timestamp
+    //       && data.imageUrl.matches('^https?://.*\.(jpg|jpeg|png|gif)$')
+    //       && data.title.size() > 0 
+    //       && data.title.size() <= 100
+    //       && data.description.size() <= 500;
+    //   }
+
+    //   // Enforce document validation on create and update
+    //   allow create: if isValidGalleryDocument(request.resource.data);
+    //   allow update: if isValidGalleryDocument(request.resource.data);
+    // }
   }
 }

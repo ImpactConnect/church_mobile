@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:church_mobile/models/testimony.dart';
+import 'package:flutter/material.dart';
 
 class TestimonyDetailsDialog extends StatelessWidget {
   const TestimonyDetailsDialog({Key? key, required this.testimony})

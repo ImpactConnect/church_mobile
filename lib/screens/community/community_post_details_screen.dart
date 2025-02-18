@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
+import '../../models/community_comment.dart';
 import '../../models/community_post.dart';
 import '../../models/community_user.dart';
-import '../../models/community_comment.dart';
-import '../../services/community_post_service.dart';
 import '../../services/community_comment_service.dart';
+import '../../services/community_post_service.dart';
 
 class CommunityPostDetailsScreen extends StatefulWidget {
   const CommunityPostDetailsScreen({
@@ -101,15 +102,15 @@ class _CommunityPostDetailsScreenState
           children: [
             // App Bar
             AppBar(
-              title: Text('Discussion'),
+              title: const Text('Discussion'),
               actions: [
                 IconButton(
-                  icon: Icon(Icons.share_outlined),
+                  icon: const Icon(Icons.share_outlined),
                   onPressed: _sharePost,
                 ),
               ],
             ),
-            
+
             // Post Content
             Expanded(
               child: SingleChildScrollView(
@@ -121,18 +122,20 @@ class _CommunityPostDetailsScreenState
                       // Topic (Title)
                       Text(
                         widget.post.title,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
-                      SizedBox(height: 12),
-                      
+                      const SizedBox(height: 12),
+
                       // Author Information
                       Row(
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                            backgroundColor:
+                                Theme.of(context).primaryColor.withOpacity(0.2),
                             child: Text(
                               widget.post.authorName[0].toUpperCase(),
                               style: TextStyle(
@@ -141,19 +144,25 @@ class _CommunityPostDetailsScreenState
                               ),
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 widget.post.authorName,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
                               Text(
                                 _formatPostDate(widget.post.createdAt.toDate()),
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
                                       color: Colors.grey[600],
                                     ),
                               ),
@@ -161,8 +170,8 @@ class _CommunityPostDetailsScreenState
                           ),
                         ],
                       ),
-                      SizedBox(height: 16),
-                      
+                      const SizedBox(height: 16),
+
                       // Post Content
                       Text(
                         widget.post.content,
@@ -170,13 +179,13 @@ class _CommunityPostDetailsScreenState
                               height: 1.5,
                             ),
                       ),
-                      
+
                       // Interaction Bar
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildInteractionBar(),
-                      
-                      Divider(height: 32),
-                      
+
+                      const Divider(height: 32),
+
                       // Comments Section
                       _buildCommentSection(),
                     ],
@@ -184,7 +193,7 @@ class _CommunityPostDetailsScreenState
                 ),
               ),
             ),
-            
+
             // Comment Input Bar
             _buildCommentInputBar(),
           ],
@@ -196,11 +205,8 @@ class _CommunityPostDetailsScreenState
   Widget _buildCommentInputBar() {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: 16, 
-        vertical: MediaQuery.of(context).viewInsets.bottom > 0 
-          ? 8 
-          : 16
-      ),
+          horizontal: 16,
+          vertical: MediaQuery.of(context).viewInsets.bottom > 0 ? 8 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -208,7 +214,7 @@ class _CommunityPostDetailsScreenState
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 5,
-            offset: Offset(0, -2),
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -218,9 +224,9 @@ class _CommunityPostDetailsScreenState
           children: [
             Expanded(
               child: ConstrainedBox(
-                constraints: BoxConstraints(
+                constraints: const BoxConstraints(
                   maxHeight: 150, // Limit max height
-                  minHeight: 50,  // Minimum height
+                  minHeight: 50, // Minimum height
                 ),
                 child: TextField(
                   controller: _commentController,
@@ -233,7 +239,7 @@ class _CommunityPostDetailsScreenState
                       borderRadius: BorderRadius.circular(30),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 12,
                     ),
@@ -244,14 +250,14 @@ class _CommunityPostDetailsScreenState
                 ),
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(Icons.send, color: Colors.white),
+                icon: const Icon(Icons.send, color: Colors.white),
                 onPressed: _submitComment,
               ),
             ),
@@ -308,7 +314,7 @@ class _CommunityPostDetailsScreenState
               size: 24,
             ),
             if (count != null) ...[
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 count.toString(),
                 style: TextStyle(
@@ -333,16 +339,16 @@ class _CommunityPostDetailsScreenState
                 fontWeight: FontWeight.bold,
               ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         StreamBuilder<List<CommunityComment>>(
           stream: _commentService.getComments(widget.post.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
+              return const Center(
                 child: Text(
                   'No comments yet',
                   style: TextStyle(color: Colors.grey),
@@ -352,9 +358,9 @@ class _CommunityPostDetailsScreenState
 
             return ListView.separated(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: snapshot.data!.length,
-              separatorBuilder: (context, index) => Divider(height: 16),
+              separatorBuilder: (context, index) => const Divider(height: 16),
               itemBuilder: (context, index) {
                 final comment = snapshot.data![index];
                 return _buildCommentCard(comment);
@@ -372,7 +378,7 @@ class _CommunityPostDetailsScreenState
         color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
       ),
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -380,7 +386,8 @@ class _CommunityPostDetailsScreenState
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                backgroundColor:
+                    Theme.of(context).primaryColor.withOpacity(0.2),
                 child: Text(
                   comment.authorName[0].toUpperCase(),
                   style: TextStyle(
@@ -390,13 +397,13 @@ class _CommunityPostDetailsScreenState
                   ),
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     comment.authorName,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -412,10 +419,10 @@ class _CommunityPostDetailsScreenState
               ),
             ],
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             comment.content,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black87,
               height: 1.4,
             ),

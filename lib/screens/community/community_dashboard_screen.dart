@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../models/community_user.dart';
 import '../../services/community_auth_service.dart';
+import '../../widgets/bottom_nav_bar.dart';
 import '../members/members_connect_screen.dart';
 import 'community_posts_screen.dart';
 
@@ -130,6 +132,8 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
           ),
         ),
       ),
+      bottomNavigationBar:
+          const BottomNavBar(currentIndex: 2), // Set to Community index
     );
   }
 

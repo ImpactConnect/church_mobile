@@ -13,7 +13,7 @@ class CommunityUser {
 
   // Convert Firestore document to CommunityUser object
   factory CommunityUser.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return CommunityUser(
       id: doc.id,
       username: data['username'] ?? '',

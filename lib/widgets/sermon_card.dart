@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
-import '../models/sermon.dart';
-import '../services/sermon_service.dart';
-import '../services/audio_player_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+
+import '../models/sermon.dart';
+import '../services/audio_player_service.dart';
+import '../services/sermon_service.dart';
 
 class SermonCard extends StatelessWidget {
   const SermonCard({
